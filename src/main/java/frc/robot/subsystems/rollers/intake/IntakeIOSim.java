@@ -16,8 +16,8 @@ public class IntakeIOSim extends GenericRollersIOSim implements IntakeIO {
     super(ID, CURRENT_LIMIT_AMPS, INVERTED, BRAKE, REDUCTION);
     intakeSim =
         new FlywheelSim(
-            LinearSystemId.createFlywheelSystem(DCMotor.getKrakenX60Foc(2), MOI, REDUCTION),
-            DCMotor.getKrakenX60Foc(2));
+            LinearSystemId.createFlywheelSystem(DCMotor.getKrakenX60Foc(1), MOI, REDUCTION),
+            DCMotor.getKrakenX60Foc(1));
   }
 
   @Override

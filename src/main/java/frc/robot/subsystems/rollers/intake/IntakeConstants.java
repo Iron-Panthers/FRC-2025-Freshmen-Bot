@@ -27,10 +27,10 @@ public class IntakeConstants {
       };
   public static final double REDUCTION =
       switch (Constants.getRobotType()) {
-        case COMP -> 1;
-        case SIM -> 1;
+        case COMP -> 2.25;
+        case SIM -> 2.25;
         default -> 1;
       };
 
-  public static final double MOI = 0.000105;
+  public static final double MOI = 0.06;
 }
