@@ -25,7 +25,7 @@
           "degrees": -90
         }
       ],
-      "zeroedPosition": [0, 0, 0]
+      "zeroedPosition": [0, -0.0762, 0.073025]
     },
     {
       "zeroedRotations": [
@@ -38,7 +38,7 @@
           "degrees": -90
         }
       ],
-      "zeroedPosition": [0, 0, 0]
+      "zeroedPosition": [0, -0.0762, 0.949325]
     },
     {
       "zeroedRotations": [
@@ -51,7 +51,7 @@
           "degrees": -90
         }
       ],
-      "zeroedPosition": [0, 0, 0]
+      "zeroedPosition": [0, 0.2794, 0.4191]
     }
   ]
 }
