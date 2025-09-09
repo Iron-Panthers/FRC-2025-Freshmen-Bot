@@ -21,6 +21,7 @@ import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
 import frc.robot.subsystems.rollers.Rollers;
+import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
 import frc.robot.subsystems.rollers.intake.IntakeIO;
 import frc.robot.subsystems.rollers.intake.IntakeIOSim;
@@ -175,6 +176,10 @@ public class RobotContainer {
     driverA.start().onTrue(swerve.zeroGyroCommand());
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
+
+    // DONT WORK, NEED TO MAKE ROLLERS MOVE
+    driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
+    driverA.y().onTrue(rollers.setTargetCommand(RollerState.HOLD));
   }
 
   private void configureAutos() {
