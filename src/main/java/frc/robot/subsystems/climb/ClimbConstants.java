@@ -9,15 +9,15 @@ import frc.robot.subsystems.canWatchdog.CANWatchdogConstants.CAN;
 public class ClimbConstants {
   public static final ClimbConfig CLIMB_CONFIG =
       switch (Constants.getRobotType()) {
-        case COMP -> new ClimbConfig(CAN.at(37, "Climb Motor"), 1.0 / 312.5, 45, 0.201);
-        case SIM -> new ClimbConfig(37, 1.0 / 312.5, 45, 0.201);
+        case COMP -> new ClimbConfig(CAN.at(37, "Climb Motor"), 312.5, 45, 0.201);
+        case SIM -> new ClimbConfig(37, 312.5, 45, 0.201);
         default -> new ClimbConfig(0, 1, 0, 0d);
       };
 
   public static final PIDGains GAINS =
       switch (Constants.getRobotType()) {
         case COMP -> new PIDGains(600, 0, 0, 0, 66.5, 5.714, 0);
-        case SIM -> new PIDGains(600, 0, 0, 0, 66.5, 5.714, 0);
+        case SIM -> new PIDGains(100, 0, 0, 0, 66.5, 0.0, 0.0);
         default -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
       };
 
@@ -72,8 +72,8 @@ public class ClimbConstants {
   public static final ClimbPhysicalConstants PHYSICAL_CONSTANTS =
       switch (Constants.getRobotType()) {
         case SIM -> new ClimbPhysicalConstants(
-            0, 0.4064, 0, 11 * Math.PI / 12, false); // 11pi/12 = 2.87
+            0.001, 0.4064, 0, 11 * Math.PI / 12, false); // 11pi/12 = 2.87
         case COMP -> new ClimbPhysicalConstants(
-            0, 0.4604, 0, 11 * Math.PI / 12, false); // weight in kg
+            0.001, 0.4604, 0, 11 * Math.PI / 12, false); // weight in kg
       };
 }
