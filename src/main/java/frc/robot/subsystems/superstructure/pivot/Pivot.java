@@ -75,6 +75,9 @@ public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements L
     return super.getPosition() * 360.0;
   }
 
+
+
+  // ----- LoggableMechanism3d methods
   @Override
   public Pose3d getParentPosition() {
     if (loggableMechanism3dParent != null) {

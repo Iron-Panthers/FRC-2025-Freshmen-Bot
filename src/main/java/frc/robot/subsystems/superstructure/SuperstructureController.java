@@ -34,6 +34,8 @@ public class SuperstructureController extends SubsystemBase {
     this.pivot = pivot;
     pivot.setPositionTarget(PivotTarget.STOW);
     elevator.setPositionTarget(ElevatorTarget.BOTTOM);
+
+    pivot.setParent(elevator);
   }
 
   @Override
@@ -84,6 +86,8 @@ public class SuperstructureController extends SubsystemBase {
     Logger.recordOutput("Superstructure/Elevator reached target", elevator.reachedTarget());
     Logger.recordOutput("Superstructure/Pivot reached target", pivot.reachedTarget());
     Logger.recordOutput("Superstructure/Reached Target", superstructureReachedTarget());
+    Logger.recordOutput("Superstructure/Mechanism Positions/Elevator", elevator.getDisplayPose3d());
+    Logger.recordOutput("Superstructure/Mechanism Positions/Pivot", pivot.getDisplayPose3d());
   }
 
   // Target state getter and setter
