@@ -20,6 +20,14 @@ import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
+import frc.robot.subsystems.rollers.Rollers;
+import frc.robot.subsystems.rollers.Rollers.RollerState;
+import frc.robot.subsystems.rollers.intake.Intake;
+import frc.robot.subsystems.rollers.intake.IntakeIO;
+import frc.robot.subsystems.rollers.intake.IntakeIOSim;
+import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
+import frc.robot.subsystems.rollers.sensors.RollerSensorsIO;
+import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.DriveConstants;
 import frc.robot.subsystems.swerve.GyroIO;
@@ -53,6 +61,9 @@ public class RobotContainer {
 
   private Drive swerve;
   private Vision vision;
+  private Intake intake;
+  private RollerSensorsIO rollerSensors;
+  private Rollers rollers;
   private RGB rgb;
   private CANWatchdog canWatchdog;
 
@@ -73,6 +84,8 @@ public class RobotContainer {
           //   vision = new Vision(new VisionIOPhotonvision(4), new VisionIOPhotonvision(5));
           rgb = new RGB(new RGBIOCANdle());
           canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
+          intake = new Intake(new IntakeIOTalonFX());
+          rollerSensors = new RollerSensorsIOComp();
         }
         case SIM -> {
           driveSimulation =
@@ -96,6 +109,7 @@ public class RobotContainer {
                   new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
 
           SimulatedArena.getInstance().resetFieldForAuto();
+          intake = new Intake(new IntakeIOSim());
         }
       }
     }
@@ -112,6 +126,15 @@ public class RobotContainer {
     if (vision == null) {
       vision = new Vision(new VisionIO() {}, new VisionIO() {});
     }
+
+    if (intake == null) {
+
+      intake = new Intake(new IntakeIO() {});
+    }
+    if (rollerSensors == null) {
+      rollerSensors = new RollerSensorsIO() {};
+    }
+    rollers = new Rollers(intake, rollerSensors);
 
     if (canWatchdog == null) {
       canWatchdog = new CANWatchdog(new CANWatchdogIO() {}, rgb);
@@ -153,6 +176,10 @@ public class RobotContainer {
     driverA.start().onTrue(swerve.zeroGyroCommand());
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
+
+    // DONT WORK, NEED TO MAKE ROLLERS MOVE
+    driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
+    driverA.y().onTrue(rollers.setTargetCommand(RollerState.HOLD));
   }
 
   private void configureAutos() {
