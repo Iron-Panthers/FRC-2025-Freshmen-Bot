@@ -1,7 +1,5 @@
 package frc.robot.subsystems.superstructure;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -10,6 +8,7 @@ import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorTarget;
 import frc.robot.subsystems.superstructure.pivot.Pivot;
 import frc.robot.subsystems.superstructure.pivot.Pivot.PivotTarget;
+import org.littletonrobotics.junction.Logger;
 
 public class SuperstructureController extends SubsystemBase {
   public enum SuperstructureState {
@@ -22,6 +21,7 @@ public class SuperstructureController extends SubsystemBase {
     STOW, // Going to the lowest position
     ZERO; // Zero the motor
   }
+
   private boolean stop = false;
   private SuperstructureState currentState;
   private SuperstructureState targetState;
@@ -34,43 +34,31 @@ public class SuperstructureController extends SubsystemBase {
     this.pivot = pivot;
     pivot.setPositionTarget(PivotTarget.STOW);
     elevator.setPositionTarget(ElevatorTarget.BOTTOM);
+
+    pivot.setParent(elevator);
   }
 
   @Override
   public void periodic() {
     if (!stop) {
       switch (currentState) { // switch on the target state
-         case L2 -> {
-          elevator.setPositionTarget(ElevatorTarget.L2);
+        case L2 -> {
           pivot.setPositionTarget(PivotTarget.L2);
-
-          // check for state transitions
-          if (this.superstructureReachedTarget()) {
-            if (targetState != currentState) {
-                if (targetState != currentState) {
-                setCurrentState(SuperstructureState.TOP);
-              }
-            }
-          }
-        }
-
-        case SETUP_L3 -> {
-          if (elevator.getPosition() > 32) {
-            pivot.setPositionTarget(PivotTarget.SETUP_L3);
-          }
+          elevator.setPositionTarget(ElevatorTarget.L2);
+        }case SETUP_L3 -> {
+          pivot.setPositionTarget(PivotTarget.SETUP_L3);
           elevator.setPositionTarget(ElevatorTarget.L3);
-
-          // check for state transitions
-          if (this.superstructureReachedTarget() && targetState != currentState) {
-            switch (targetState) {
-              case SCORE_L3 -> setCurrentState(SuperstructureState.SCORE_L3);
-              default -> setCurrentState(SuperstructureState.TOP);
-            }
-          }
+        }case SCORE_L3 -> {
+          pivot.setPositionTarget(PivotTarget.SCORE_L3);
+          elevator.setPositionTarget(ElevatorTarget.L3);
+        }case SETUP_L4 -> {
+          pivot.setPositionTarget(PivotTarget.SETUP_L4);
+          elevator.setPositionTarget(ElevatorTarget.SETUP_L4);
+        }case SCORE_L4 -> {
+          pivot.setPositionTarget(PivotTarget.SCORE_L4);
+          elevator.setPositionTarget(ElevatorTarget.SCORE_L4);
         }
-
-
-      }
+    }
     } else {
       elevator.setControlMode(ControlMode.STOP);
       pivot.setControlMode(ControlMode.STOP);
@@ -84,6 +72,8 @@ public class SuperstructureController extends SubsystemBase {
     Logger.recordOutput("Superstructure/Elevator reached target", elevator.reachedTarget());
     Logger.recordOutput("Superstructure/Pivot reached target", pivot.reachedTarget());
     Logger.recordOutput("Superstructure/Reached Target", superstructureReachedTarget());
+    Logger.recordOutput("Superstructure/Mechanism Positions/Elevator", elevator.getDisplayPose3d());
+    Logger.recordOutput("Superstructure/Mechanism Positions/Pivot", pivot.getDisplayPose3d());
   }
 
   // Target state getter and setter
@@ -176,8 +166,8 @@ public class SuperstructureController extends SubsystemBase {
   public boolean superstructureReachedTarget() {
     boolean output =
         (elevator.reachedTarget()
-                && pivot.reachedTarget()
-                && currentState != SuperstructureState.ZERO);
+            && pivot.reachedTarget()
+            && currentState != SuperstructureState.ZERO);
 
     return output;
   }
