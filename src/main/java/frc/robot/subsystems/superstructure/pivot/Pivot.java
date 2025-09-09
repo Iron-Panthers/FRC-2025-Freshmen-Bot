@@ -15,16 +15,9 @@ public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements L
     STOW(-96),
     L1(-110),
     L2(-107),
-    SCORE_L3(-117),
-    SETUP_L3(-79),
-    CLIMB(-115),
-    ZERO_LOW(-95.2),
-    ZERO_HIGH(90),
-    SETUP_L4(144),
-    SCORE_L4(149),
-    DESCORE_HIGH(0),
-    INTAKE_SIDE(40),
-    SCORE_SIDE(100),
+    L3(-117),
+    // CLIMB(-115),
+    L4(149),
 
     // for the algae on L2
     DESCORE_LOW(-15);
