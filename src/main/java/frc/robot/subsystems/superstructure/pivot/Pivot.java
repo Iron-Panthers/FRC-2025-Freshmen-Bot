@@ -18,6 +18,7 @@ public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements L
     L3(-117),
     // CLIMB(-115),
     L4(149),
+    ZERO(0),
 
     // for the algae on L2
     DESCORE_LOW(-15);
@@ -67,8 +68,6 @@ public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements L
   public double getPosition() {
     return super.getPosition() * 360.0;
   }
-
-
 
   // ----- LoggableMechanism3d methods
   @Override

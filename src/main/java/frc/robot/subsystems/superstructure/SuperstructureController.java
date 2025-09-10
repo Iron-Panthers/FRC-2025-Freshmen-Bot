@@ -6,19 +6,18 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.generic_subsystems.superstructure.GenericSuperstructure.ControlMode;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorTarget;
+import frc.robot.subsystems.superstructure.elevator.ElevatorConstants;
 import frc.robot.subsystems.superstructure.pivot.Pivot;
 import frc.robot.subsystems.superstructure.pivot.Pivot.PivotTarget;
 import org.littletonrobotics.junction.Logger;
 
 public class SuperstructureController extends SubsystemBase {
   public enum SuperstructureState {
-    SETUP_L4, // Setting up in L4
-    SCORE_L4, // Scoring in L4
-    SETUP_L3, // Setting up in L3
-    SCORE_L3, // Scoring in L3
+    L4, // Scoring in L4
+    L3, // Scoring in L3
     L2, // Scoring in L2
+    L1,
     TOP, // Apex
-    STOW, // Going to the lowest position
     ZERO; // Zero the motor
   }
 
@@ -42,23 +41,33 @@ public class SuperstructureController extends SubsystemBase {
   public void periodic() {
     if (!stop) {
       switch (currentState) { // switch on the target state
+        case L1 -> {
+          pivot.setPositionTarget(PivotTarget.L1);
+          elevator.setPositionTarget(ElevatorTarget.L1);
+        }
         case L2 -> {
           pivot.setPositionTarget(PivotTarget.L2);
           elevator.setPositionTarget(ElevatorTarget.L2);
-        }case SETUP_L3 -> {
-          pivot.setPositionTarget(PivotTarget.SETUP_L3);
-          elevator.setPositionTarget(ElevatorTarget.L3);
-        }case SCORE_L3 -> {
-          pivot.setPositionTarget(PivotTarget.SCORE_L3);
-          elevator.setPositionTarget(ElevatorTarget.L3);
-        }case SETUP_L4 -> {
-          pivot.setPositionTarget(PivotTarget.SETUP_L4);
-          elevator.setPositionTarget(ElevatorTarget.SETUP_L4);
-        }case SCORE_L4 -> {
-          pivot.setPositionTarget(PivotTarget.SCORE_L4);
-          elevator.setPositionTarget(ElevatorTarget.SCORE_L4);
         }
-    }
+        case L3 -> {
+          pivot.setPositionTarget(PivotTarget.L3);
+          elevator.setPositionTarget(ElevatorTarget.L3);
+        }
+        case L4 -> {
+          pivot.setPositionTarget(PivotTarget.L4);
+          elevator.setPositionTarget(ElevatorTarget.L4);
+        }
+        case ZERO -> {
+          pivot.setPositionTarget(PivotTarget.ZERO);
+          elevator.setZeroing(true);
+          if (elevator.getFilteredSupplyCurrentAmps()
+              > ElevatorConstants.ZEROING_VOLTAGE_THRESHOLD) {
+            elevator.setOffset();
+            elevator.setControlMode(ControlMode.POSITION);
+            elevator.setZeroing(false);
+          }
+        }
+      }
     } else {
       elevator.setControlMode(ControlMode.STOP);
       pivot.setControlMode(ControlMode.STOP);

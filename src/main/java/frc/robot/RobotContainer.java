@@ -20,6 +20,9 @@ import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
+import frc.robot.subsystems.superstructure.SuperstructureController;
+import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
+import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.DriveConstants;
 import frc.robot.subsystems.swerve.GyroIO;
@@ -55,8 +58,9 @@ public class RobotContainer {
   private Vision vision;
   private RGB rgb;
   private CANWatchdog canWatchdog;
-
+  private SuperstructureController superstructureController;
   private SwerveDriveSimulation driveSimulation = null;
+  private Elevator elevator;
 
   public RobotContainer() {
 
@@ -138,21 +142,24 @@ public class RobotContainer {
 
   private void configureBindings() {
     // -----Driver Controls-----
-    swerve.setDefaultCommand(
-        swerve
-            .run(
-                () -> {
-                  swerve.driveTeleopController(
-                      -driverA.getLeftY(),
-                      -driverA.getLeftX(),
-                      driverA.getLeftTriggerAxis() - driverA.getRightTriggerAxis(),
-                      DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
-                })
-            .withName("Drive Teleop"));
+    // swerve.setDefaultCommand(
+    //     swerve
+    //         .run(
+    //             () -> {
+    //               swerve.driveTeleopController(
+    //                   -driverA.getLeftY(),
+    //                   -driverA.getLeftX(),
+    //                   driverA.getLeftTriggerAxis() - driverA.getRightTriggerAxis(),
+    //                   DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
+    //             })
+    //         .withName("Drive Teleop"));
 
-    driverA.start().onTrue(swerve.zeroGyroCommand());
+    // driverA.start().onTrue(swerve.zeroGyroCommand());
 
-    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
+    // driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
+
+    driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.TOP));
+    driverA.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L1));
   }
 
   private void configureAutos() {
