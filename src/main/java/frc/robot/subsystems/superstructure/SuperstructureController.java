@@ -18,7 +18,8 @@ public class SuperstructureController extends SubsystemBase {
     L2, // Scoring in L2
     L1,
     TOP, // Apex
-    ZERO; // Zero the motor
+    ZERO, // Zero the motor
+    INTAKE;
   }
 
   private boolean stop = false;
@@ -35,6 +36,7 @@ public class SuperstructureController extends SubsystemBase {
     elevator.setPositionTarget(ElevatorTarget.BOTTOM);
 
     pivot.setParent(elevator);
+    currentState = SuperstructureState.INTAKE;
   }
 
   @Override
@@ -56,6 +58,14 @@ public class SuperstructureController extends SubsystemBase {
         case L4 -> {
           pivot.setPositionTarget(PivotTarget.L4);
           elevator.setPositionTarget(ElevatorTarget.L4);
+        }
+        case TOP -> {
+          pivot.setPositionTarget(PivotTarget.TOP);
+          elevator.setPositionTarget(ElevatorTarget.TOP);
+        }
+        case INTAKE -> {
+          pivot.setPositionTarget(PivotTarget.INTAKE);
+          elevator.setPositionTarget(ElevatorTarget.INTAKE);
         }
         case ZERO -> {
           pivot.setPositionTarget(PivotTarget.ZERO);
