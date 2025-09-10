@@ -56,9 +56,6 @@ public class RobotContainer {
 
   private Drive swerve;
   private Vision vision;
-  private Intake intake;
-  private RollerSensorsIO rollerSensors;
-  private Rollers rollers;
   private RGB rgb;
   private CANWatchdog canWatchdog;
   private SuperstructureController superstructureController;
@@ -80,8 +77,6 @@ public class RobotContainer {
           //   vision = new Vision(new VisionIOPhotonvision(4), new VisionIOPhotonvision(5));
           rgb = new RGB(new RGBIOCANdle());
           canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
-          intake = new Intake(new IntakeIOTalonFX());
-          rollerSensors = new RollerSensorsIOComp();
         }
         case SIM -> {
           driveSimulation =
@@ -105,7 +100,6 @@ public class RobotContainer {
                   new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
 
           SimulatedArena.getInstance().resetFieldForAuto();
-          intake = new Intake(new IntakeIOSim());
         }
       }
     }
@@ -122,15 +116,6 @@ public class RobotContainer {
     if (vision == null) {
       vision = new Vision(new VisionIO() {}, new VisionIO() {});
     }
-
-    if (intake == null) {
-
-      intake = new Intake(new IntakeIO() {});
-    }
-    if (rollerSensors == null) {
-      rollerSensors = new RollerSensorsIO() {};
-    }
-    rollers = new Rollers(intake, rollerSensors);
 
     if (canWatchdog == null) {
       canWatchdog = new CANWatchdog(new CANWatchdogIO() {}, rgb);
@@ -171,7 +156,8 @@ public class RobotContainer {
 
     // driverA.start().onTrue(swerve.zeroGyroCommand());
 
-    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
+    driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.TOP));
+    driverA.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L1));
   }
 
   private void configureAutos() {
