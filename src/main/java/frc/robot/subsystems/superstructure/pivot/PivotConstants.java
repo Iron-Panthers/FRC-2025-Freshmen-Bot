@@ -56,13 +56,14 @@ public class PivotConstants {
   public static final double SUPPLY_CURRENT_LIMIT = 30;
 
   // PIVOT POSITION CONSTANTS
-  public static final Transform3d ELEVATOR_TO_PIVOT_TRANSFORM = // HACK: Currently no transform because testing
+  public static final Transform3d
+      ELEVATOR_TO_PIVOT_TRANSFORM = // HACK: Currently no transform because testing
       switch (Constants.getRobotType()) {
-        default -> new Transform3d(
-            new Translation3d(
-                Units.inchesToMeters(0), Units.inchesToMeters(0d), Units.inchesToMeters(0)),
-            new Rotation3d(0, 0, 0));
-      };
+            default -> new Transform3d(
+                new Translation3d(
+                    Units.inchesToMeters(0), Units.inchesToMeters(0d), Units.inchesToMeters(0)),
+                new Rotation3d(0, 0, 0));
+          };
 
   // PHYSICAL CONSTANTS
   public static record PivotPhysicalConstants(
