@@ -72,7 +72,7 @@ public class TeleopController {
         yawSupplier.get());
   }
 
-  //all the math
+  // all the math
   public Translation2d calculateLinearVelocity(double x, double y) {
 
     Rotation2d theta;
@@ -81,7 +81,7 @@ public class TeleopController {
 
     double magnitude = MathUtil.applyDeadband(Math.hypot(x, y), 0.1);
 
-    //apply deadband, raise magnitude to exponent
+    // apply deadband, raise magnitude to exponent
     magnitude = Math.pow(magnitude, 1.5);
 
     Translation2d linearVelocity =

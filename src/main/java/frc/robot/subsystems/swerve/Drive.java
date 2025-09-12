@@ -28,7 +28,7 @@ public class Drive extends SubsystemBase {
   public enum DriveModes {
     TELEOP,
     TRAJECTORY,
-    AUTO_ALLIGN;
+    AUTO_ALIGN;
   }
 
   private DriveModes driveMode = DriveModes.TELEOP;
@@ -49,6 +49,7 @@ public class Drive extends SubsystemBase {
   private ChassisSpeeds trajectorySpeeds = new ChassisSpeeds();
   private HeadingController headingController = null;
   private PIDAutoAlignController pidAutoAlignController = null;
+
   public Drive(GyroIO gyroIO, ModuleIO fl, ModuleIO fr, ModuleIO bl, ModuleIO br) {
     this.gyroIO = gyroIO;
 
@@ -102,10 +103,10 @@ public class Drive extends SubsystemBase {
         }
         // add heading controll override
       }
-      case AUTO_ALLIGN -> {
-        if(pidAutoAlignController != null){
-          targetSpeeds.vxMetersPerSecond = pidAutoAlignController.updateXVel();
-          targetSpeeds.vyMetersPerSecond = pidAutoAlignController.updateYVel();
+      case AUTO_ALIGN -> {
+        if (pidAutoAlignController != null) {
+          targetSpeeds.vxMetersPerSecond = pidAutoAlignController.update().vxMetersPerSecond;
+          targetSpeeds.vyMetersPerSecond = pidAutoAlignController.update().vyMetersPerSecond;
         }
       }
     }
@@ -202,12 +203,12 @@ public class Drive extends SubsystemBase {
   public void clearHeadingControl() {
     headingController = null;
   }
-  
-  public Pose2d setTargetPosition(Pose2d targetPosition){
-    if(pidAutoAlignController == null){
-      Pose2d positionSupplier = new Pose2d(); //DOES NOT WORK TODO. NOT WORK
+
+  public Pose2d setTargetPosition(Pose2d targetPosition) {
+    if (pidAutoAlignController == null) {
+      Pose2d positionSupplier = new Pose2d(); // DOES NOT WORK TODO. NOT WORK
       pidAutoAlignController = new PIDAutoAlignController(() -> positionSupplier, targetPosition);
-    }else {
+    } else {
       pidAutoAlignController.setTargetPosition(targetPosition);
     }
 
