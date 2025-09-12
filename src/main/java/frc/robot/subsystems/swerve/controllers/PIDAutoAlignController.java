@@ -27,7 +27,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 public class PIDAutoAlignController {
     
     //supplies the position values
-    private ProfiledPIDController controller;
+    private ProfiledPIDController xController;
+    private ProfiledPIDController yController;
     private Supplier<Pose2d> positionSupplier;
 
     //target position
@@ -39,23 +40,32 @@ public class PIDAutoAlignController {
         this.targetPosition = targetPosition;
         
         //setting up the ProfiledPIDCawontroller
-        controller = new ProfiledPIDController(
+        xController = new ProfiledPIDController(
             PID_AUTOALIGN_CONSTANTS.kP(),
             0,
             PID_AUTOALIGN_CONSTANTS.kD(),
             new Constraints(PID_AUTOALIGN_CONSTANTS.maxVelocity(),
             PID_AUTOALIGN_CONSTANTS.maxAcceleration()),
             Constants.PERIODIC_LOOP_SEC);
+        
+        yController = new ProfiledPIDController(
+            PID_AUTOALIGN_CONSTANTS.kP(),
+            0,
+            PID_AUTOALIGN_CONSTANTS.kD(),
+            new Constraints(PID_AUTOALIGN_CONSTANTS.maxVelocity(),
+            PID_AUTOALIGN_CONSTANTS.maxAcceleration()),
+            Constants.PERIODIC_LOOP_SEC);
+        
     }
     //calculate how to get to the desired position
     
         
     //update the values 
     public double updateXVel(){
-        return controller.calculate(positionSupplier.get().getX(), targetPosition.getX()); 
+        return xController.calculate(positionSupplier.get().getX(), targetPosition.getX()); 
     }
     public double updateYVel(){
-        return controller.calculate(positionSupplier.get().getY(), targetPosition.getY());
+        return yController.calculate(positionSupplier.get().getY(), targetPosition.getY());
     }
     //log your data in advantage kit
 
