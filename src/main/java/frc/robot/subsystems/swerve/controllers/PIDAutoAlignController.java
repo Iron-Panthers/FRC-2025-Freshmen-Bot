@@ -58,7 +58,15 @@ public class PIDAutoAlignController {
         
     }
     //calculate how to get to the desired position
-    
+    //Errors in my way of doing it: it doesn't go in a straight line
+    //Basically, let's say that dx is horizontal distance and dy is vertical distance, such
+    //that distance is the starting point to the ending point
+    //if dx < dy, then the robot will reach point x before point y
+    //so it won't make a straight line
+    //To combat this, I think we can do the equation
+    //v(min(dx,dy)) = (min(dx,dy) * v(max(dx,dy))/(max(dx,dy))
+    //This will basically slow down whichever distance should've reached first by a factor
+    //that I hope will be enough to make a straight line.
         
     //update the values 
     public double updateXVel(){
