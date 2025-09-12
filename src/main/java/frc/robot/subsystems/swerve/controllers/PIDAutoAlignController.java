@@ -69,5 +69,7 @@ public class PIDAutoAlignController {
     }
     //log your data in advantage kit
 
-    
+    public void setTargetPosition(Pose2d targetPosition){
+        this.targetPosition = targetPosition;
+    }   
 }

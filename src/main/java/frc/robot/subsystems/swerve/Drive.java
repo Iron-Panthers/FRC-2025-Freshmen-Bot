@@ -4,6 +4,7 @@ import static frc.robot.subsystems.swerve.DriveConstants.KINEMATICS;
 
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -47,7 +48,7 @@ public class Drive extends SubsystemBase {
   private final TeleopController teleopController;
   private ChassisSpeeds trajectorySpeeds = new ChassisSpeeds();
   private HeadingController headingController = null;
-  private PIDAutoAlignController pidAutoAlignController;
+  private PIDAutoAlignController pidAutoAlignController = null;
   public Drive(GyroIO gyroIO, ModuleIO fl, ModuleIO fr, ModuleIO bl, ModuleIO br) {
     this.gyroIO = gyroIO;
 
@@ -102,8 +103,10 @@ public class Drive extends SubsystemBase {
         // add heading controll override
       }
       case AUTO_ALLIGN -> {
-        trajectorySpeeds.vxMetersPerSecond = pidAutoAlignController.updateXVel();
-        trajectorySpeeds.vyMetersPerSecond = pidAutoAlignController.updateYVel();
+        if(pidAutoAlignController != null){
+          targetSpeeds.vxMetersPerSecond = pidAutoAlignController.updateXVel();
+          targetSpeeds.vyMetersPerSecond = pidAutoAlignController.updateYVel();
+        }
       }
     }
     RobotState.getInstance().addRobotSpeeds(getRobotSpeeds());
@@ -198,6 +201,17 @@ public class Drive extends SubsystemBase {
 
   public void clearHeadingControl() {
     headingController = null;
+  }
+  
+  public Pose2d setTargetPosition(Pose2d targetPosition){
+    if(pidAutoAlignController == null){
+      Pose2d positionSupplier = new Pose2d(); //DOES NOT WORK TODO. NOT WORK
+      pidAutoAlignController = new PIDAutoAlignController(() -> positionSupplier, targetPosition);
+    }else {
+      pidAutoAlignController.setTargetPosition(targetPosition);
+    }
+
+    return targetPosition;
   }
 
   public boolean isTeleop() {
