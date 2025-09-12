@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.swerve.controllers.HeadingController;
+import frc.robot.subsystems.swerve.controllers.PIDAutoAlignController;
 import frc.robot.subsystems.swerve.controllers.TeleopController;
 import java.util.Arrays;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -25,7 +26,8 @@ import org.littletonrobotics.junction.Logger;
 public class Drive extends SubsystemBase {
   public enum DriveModes {
     TELEOP,
-    TRAJECTORY;
+    TRAJECTORY,
+    AUTO_ALLIGN;
   }
 
   private DriveModes driveMode = DriveModes.TELEOP;
@@ -45,7 +47,7 @@ public class Drive extends SubsystemBase {
   private final TeleopController teleopController;
   private ChassisSpeeds trajectorySpeeds = new ChassisSpeeds();
   private HeadingController headingController = null;
-
+  private PIDAutoAlignController pidAutoAlignController;
   public Drive(GyroIO gyroIO, ModuleIO fl, ModuleIO fr, ModuleIO bl, ModuleIO br) {
     this.gyroIO = gyroIO;
 
@@ -98,6 +100,10 @@ public class Drive extends SubsystemBase {
           targetSpeeds.omegaRadiansPerSecond = headingController.update() + 0.0001;
         }
         // add heading controll override
+      }
+      case AUTO_ALLIGN -> {
+        trajectorySpeeds.vxMetersPerSecond = pidAutoAlignController.updateXVel();
+        trajectorySpeeds.vyMetersPerSecond = pidAutoAlignController.updateYVel();
       }
     }
     RobotState.getInstance().addRobotSpeeds(getRobotSpeeds());

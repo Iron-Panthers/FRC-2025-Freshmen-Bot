@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve.controllers;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
@@ -27,13 +28,13 @@ public class PIDAutoAlignController {
     
     //supplies the position values
     private ProfiledPIDController controller;
-    private Supplier<Rotation2d> positionSupplier;
+    private Supplier<Pose2d> positionSupplier;
 
     //target position
     private Pose2d targetPosition;
-
     
-    public PIDAutoAlignController() {
+    
+    public PIDAutoAlignController(Supplier<Pose2d> positionSupplier, Pose2d targetPosition) {
         this.positionSupplier = positionSupplier;
         this.targetPosition = targetPosition;
         
@@ -45,14 +46,18 @@ public class PIDAutoAlignController {
             new Constraints(PID_AUTOALIGN_CONSTANTS.maxVelocity(),
             PID_AUTOALIGN_CONSTANTS.maxAcceleration()),
             Constants.PERIODIC_LOOP_SEC);
-
-        
-        //calculate how to get to the desired position
-        
-        
-        //update the values 
-        
-        //log your data in advantage kit
-
     }
+    //calculate how to get to the desired position
+    
+        
+    //update the values 
+    public double updateXVel(){
+        return controller.calculate(positionSupplier.get().getX(), targetPosition.getX()); 
+    }
+    public double updateYVel(){
+        return controller.calculate(positionSupplier.get().getY(), targetPosition.getY());
+    }
+    //log your data in advantage kit
+
+    
 }
