@@ -63,20 +63,14 @@ public class PIDAutoAlignController {
   }
   // calculate how to get to the desired position
   public void calculateLinearMovement() {
-    double targetDistance =
-        Math.sqrt(Math.pow(targetPosition.getX(), 2) + Math.pow(targetPosition.getY(), 2));
-    double currentDistance =
-        Math.sqrt(
-            Math.pow(positionSupplier.get().getX(), 2)
-                + Math.pow(positionSupplier.get().getY(), 2));
-    double generalVel = controller.calculate(currentDistance, targetDistance);
-
-    if (targetPosition.getX() > targetPosition.getY()) {
+    
+    double desiredSlope = (positionSupplier.get().getY()-targetPosition.getY())/(positionSupplier.get().getX()-targetPosition.getX());
+    if(targetPosition.getX()>targetPosition.getY()){ //will take longer to get to X than to Y
       xVel = xController.calculate(positionSupplier.get().getX(), targetPosition.getX());
-      yVel = (Math.sqrt(Math.pow(generalVel, 2) - Math.pow(xVel, 2)) + ((positionSupplier.get().getX()*xVel)/positionSupplier.get().getY()))/2;
-    } else {
-      yVel = xController.calculate(positionSupplier.get().getY(), targetPosition.getY());
-      xVel = (Math.sqrt(Math.pow(generalVel, 2) - Math.pow(yVel, 2)) + ((positionSupplier.get().getY()*yVel)/positionSupplier.get().getX()))/2;
+      yVel = xVel * desiredSlope;
+    }else{ //will take longer to get to Y than to X
+      yVel = xController.calculate(positionSupplier.get().getY(),targetPosition.getY());
+      xVel = yVel/desiredSlope;
     }
   }
 
