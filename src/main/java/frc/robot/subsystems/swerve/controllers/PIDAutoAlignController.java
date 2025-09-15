@@ -20,8 +20,6 @@ public class PIDAutoAlignController {
 
   // supplies the position values
   private ProfiledPIDController controller;
-  private ProfiledPIDController xController;
-  private ProfiledPIDController yController;
   private Supplier<Pose2d> positionSupplier;
 
   // target position
@@ -42,34 +40,15 @@ public class PIDAutoAlignController {
             new Constraints(
                 PID_AUTOALIGN_CONSTANTS.maxVelocity(), PID_AUTOALIGN_CONSTANTS.maxAcceleration()),
             Constants.PERIODIC_LOOP_SEC);
-
-    xController =
-        new ProfiledPIDController(
-            PID_AUTOALIGN_CONSTANTS.kP(),
-            0,
-            PID_AUTOALIGN_CONSTANTS.kD(),
-            new Constraints(
-                PID_AUTOALIGN_CONSTANTS.maxVelocity(), PID_AUTOALIGN_CONSTANTS.maxAcceleration()),
-            Constants.PERIODIC_LOOP_SEC);
-
-    yController =
-        new ProfiledPIDController(
-            PID_AUTOALIGN_CONSTANTS.kP(),
-            0,
-            PID_AUTOALIGN_CONSTANTS.kD(),
-            new Constraints(
-                PID_AUTOALIGN_CONSTANTS.maxVelocity(), PID_AUTOALIGN_CONSTANTS.maxAcceleration()),
-            Constants.PERIODIC_LOOP_SEC);
   }
   // calculate how to get to the desired position
   public void calculateLinearMovement() {
-    
     double desiredSlope = (positionSupplier.get().getY()-targetPosition.getY())/(positionSupplier.get().getX()-targetPosition.getX());
     if(targetPosition.getX()>targetPosition.getY()){ //will take longer to get to X than to Y
-      xVel = xController.calculate(positionSupplier.get().getX(), targetPosition.getX());
+      xVel = controller.calculate(positionSupplier.get().getX(), targetPosition.getX());
       yVel = xVel * desiredSlope;
     }else{ //will take longer to get to Y than to X
-      yVel = xController.calculate(positionSupplier.get().getY(),targetPosition.getY());
+      yVel = controller.calculate(positionSupplier.get().getY(),targetPosition.getY());
       xVel = yVel/desiredSlope;
     }
   }
