@@ -43,6 +43,9 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "Swerve/YawOffset")
   private Rotation2d gyroYawOffset = new Rotation2d();
 
+  @AutoLogOutput(key = "Swerve/CurrentPosition") //TODO: I don't think that's what Nora wants
+  private Pose2d currentPosition = new Pose2d();
+
   private ChassisSpeeds targetSpeeds = new ChassisSpeeds();
 
   private final TeleopController teleopController;
@@ -63,6 +66,7 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+    currentPosition = RobotState.getInstance().getEstimatedPose();
     // update inputs
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Swerve/Gyro", gyroInputs);
@@ -105,6 +109,8 @@ public class Drive extends SubsystemBase {
       }
       case AUTO_ALIGN -> {
         if (pidAutoAlignController != null) {
+          Pose2d targetPose2d = new Pose2d(RobotState.getInstance().getAlignPose().getX(), RobotState.getInstance().getAlignPose().getY(), new Rotation2d());
+          setTargetPosition(targetPose2d);
           targetSpeeds.vxMetersPerSecond = pidAutoAlignController.update().vxMetersPerSecond;
           targetSpeeds.vyMetersPerSecond = pidAutoAlignController.update().vyMetersPerSecond;
         }
@@ -138,6 +144,14 @@ public class Drive extends SubsystemBase {
       Logger.recordOutput(
           "Swerve/HeadingTarget", headingController.getTargetHeading().getRadians());
       Logger.recordOutput("Swerve/HeadingOutput", headingController.update());
+    }
+    if (pidAutoAlignController != null) {
+      Logger.recordOutput(
+          "Swerve/PositionTargetX", pidAutoAlignController.getTargetPosition().getX());
+      Logger.recordOutput(
+          "Swerve/PositionTargetY", pidAutoAlignController.getTargetPosition().getY());
+      Logger.recordOutput("Swerve/VelocityOutputX", pidAutoAlignController.update().vxMetersPerSecond);
+      Logger.recordOutput("Swerve/VelocityOutputY", pidAutoAlignController.update().vyMetersPerSecond);
     }
   }
 
@@ -206,8 +220,7 @@ public class Drive extends SubsystemBase {
 
   public Pose2d setTargetPosition(Pose2d targetPosition) {
     if (pidAutoAlignController == null) {
-      Pose2d positionSupplier = new Pose2d(); // DOES NOT WORK TODO. NOT WORK
-      pidAutoAlignController = new PIDAutoAlignController(() -> positionSupplier, targetPosition);
+      pidAutoAlignController = new PIDAutoAlignController(() -> currentPosition, targetPosition);
     } else {
       pidAutoAlignController.setTargetPosition(targetPosition);
     }

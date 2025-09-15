@@ -43,6 +43,10 @@ public class PIDAutoAlignController {
   }
   // calculate how to get to the desired position
   public void calculateLinearMovement() {
+    //basically this code says that
+    //yVel    (y-y1)
+    //---- =  ------
+    //xVel    (x-x1) 
     double desiredSlope = (positionSupplier.get().getY()-targetPosition.getY())/(positionSupplier.get().getX()-targetPosition.getX());
     if(targetPosition.getX()>targetPosition.getY()){ //will take longer to get to X than to Y
       xVel = controller.calculate(positionSupplier.get().getX(), targetPosition.getX());
@@ -59,7 +63,9 @@ public class PIDAutoAlignController {
     return new ChassisSpeeds(xVel, yVel, 0);
   }
   // log your data in advantage kit
-
+  public Pose2d getTargetPosition(){
+    return targetPosition;
+  }
   public void setTargetPosition(Pose2d targetPosition) {
     this.targetPosition = targetPosition;
   }
