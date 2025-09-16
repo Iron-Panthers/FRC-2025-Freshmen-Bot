@@ -148,19 +148,19 @@ public class RobotContainer {
 
   private void configureBindings() {
     // -----Driver Controls-----
-    // swerve.setDefaultCommand(
-    //     swerve
-    //         .run(
-    //             () -> {
-    //               swerve.driveTeleopController(
-    //                   -driverA.getLeftY(),
-    //                   -driverA.getLeftX(),
-    //                   driverA.getLeftTriggerAxis() - driverA.getRightTriggerAxis(),
-    //                   DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
-    //             })
-    //         .withName("Drive Teleop"));
+    swerve.setDefaultCommand(
+        swerve
+            .run(
+                () -> {
+                  swerve.driveTeleopController(
+                      -driverA.getLeftY(),
+                      -driverA.getLeftX(),
+                      driverA.getLeftTriggerAxis() - driverA.getRightTriggerAxis(),
+                      DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
+                })
+            .withName("Drive Teleop"));
 
-    // driverA.start().onTrue(swerve.zeroGyroCommand());
+    driverA.start().onTrue(swerve.zeroGyroCommand());
 
     driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.TOP));
     driverA.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L1));

@@ -21,7 +21,7 @@ public class PivotConstants {
   public static final PIDGains GAINS =
       switch (Constants.getRobotType()) {
         case COMP -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
-        case SIM -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
+        case SIM -> new PIDGains(20, 0, 0, 0, 9.31, 0.08, 0.26);
         default -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
       };
 
