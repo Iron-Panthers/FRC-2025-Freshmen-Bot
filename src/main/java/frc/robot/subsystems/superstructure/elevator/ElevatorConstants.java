@@ -22,7 +22,7 @@ public class ElevatorConstants {
   public static final PIDGains GAINS =
       switch (Constants.getRobotType()) {
         case COMP -> new PIDGains(2, 0, 0, 0, 0.08, 0.002, 0.35);
-        case SIM -> new PIDGains(2, 0, 0, 0, 0.08, 0.002, 0.35);
+        case SIM -> new PIDGains(2, 0, 0, 0, 0.03, 0.001, 2.63);
         default -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
       };
 
@@ -79,7 +79,7 @@ public class ElevatorConstants {
 
   public static final ElevatorPhysicalConstants PHYSICAL_CONSTANTS =
       switch (Constants.getRobotType()) {
-        case SIM -> new ElevatorPhysicalConstants(4.0120245, 0.0239776, 0, 0.8255, true);
+        case SIM -> new ElevatorPhysicalConstants(4.0120245, 0.0239776, 0, 5, true);
         case COMP -> new ElevatorPhysicalConstants(0, 0, 0, 0, false);
       };
 

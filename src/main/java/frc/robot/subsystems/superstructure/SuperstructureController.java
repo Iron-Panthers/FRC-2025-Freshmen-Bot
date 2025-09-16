@@ -23,7 +23,6 @@ public class SuperstructureController extends SubsystemBase {
   }
 
   private boolean stop = false;
-  private SuperstructureState currentState;
   private SuperstructureState targetState;
 
   private final Elevator elevator;
@@ -36,13 +35,13 @@ public class SuperstructureController extends SubsystemBase {
     elevator.setPositionTarget(ElevatorTarget.BOTTOM);
 
     pivot.setParent(elevator);
-    currentState = SuperstructureState.INTAKE;
+    targetState = SuperstructureState.INTAKE;
   }
 
   @Override
   public void periodic() {
     if (!stop) {
-      switch (currentState) { // switch on the target state
+      switch (targetState) { // switch on the target state
         case L1 -> {
           pivot.setPositionTarget(PivotTarget.L1);
           elevator.setPositionTarget(ElevatorTarget.L1);
@@ -87,10 +86,9 @@ public class SuperstructureController extends SubsystemBase {
     pivot.periodic();
 
     Logger.recordOutput("Superstructure/TargetState", targetState);
-    Logger.recordOutput("Superstructure/CurrentState", currentState);
-    Logger.recordOutput("Superstructure/Elevator reached target", elevator.reachedTarget());
-    Logger.recordOutput("Superstructure/Pivot reached target", pivot.reachedTarget());
-    Logger.recordOutput("Superstructure/Reached Target", superstructureReachedTarget());
+    Logger.recordOutput("Superstructure/ElevatorReachedTarget", elevator.reachedTarget());
+    Logger.recordOutput("Superstructure/PivotReachedTarget", pivot.reachedTarget());
+    Logger.recordOutput("Superstructure/ReachedTarget", superstructureReachedTarget());
     Logger.recordOutput("Superstructure/Mechanism Positions/Elevator", elevator.getDisplayPose3d());
     Logger.recordOutput("Superstructure/Mechanism Positions/Pivot", pivot.getDisplayPose3d());
   }
@@ -108,11 +106,11 @@ public class SuperstructureController extends SubsystemBase {
   // Current state getter and setter
   public void setCurrentState(SuperstructureState superstructureState) {
     this.stop = false;
-    this.currentState = superstructureState;
+    this.targetState = superstructureState;
   }
 
   public SuperstructureState getCurrentState() {
-    return currentState;
+    return targetState;
   }
 
   public void setStopped(boolean stopped) {
@@ -132,7 +130,7 @@ public class SuperstructureController extends SubsystemBase {
         () -> {},
         (e) -> {},
         () -> {
-          return currentState == targetState && superstructureReachedTarget();
+          return superstructureReachedTarget();
         },
         this);
   }
@@ -186,7 +184,7 @@ public class SuperstructureController extends SubsystemBase {
     boolean output =
         (elevator.reachedTarget()
             && pivot.reachedTarget()
-            && currentState != SuperstructureState.ZERO);
+            && targetState != SuperstructureState.ZERO);
 
     return output;
   }

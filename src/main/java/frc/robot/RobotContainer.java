@@ -164,6 +164,7 @@ public class RobotContainer {
 
     driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.TOP));
     driverA.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L1));
+    driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.INTAKE));
   }
 
   private void configureAutos() {
