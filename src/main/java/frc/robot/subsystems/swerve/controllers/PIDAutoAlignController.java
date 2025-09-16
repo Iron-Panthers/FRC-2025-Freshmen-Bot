@@ -8,6 +8,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import frc.robot.Constants;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 // 1. go to notion and put these notes on there
 /*2. headingcontroller basically takes an angle and goes to the target angle based on calculations
@@ -20,6 +21,8 @@ public class PIDAutoAlignController {
 
   // supplies the position values
   private ProfiledPIDController controller;
+  private ProfiledPIDController xController;
+  private ProfiledPIDController yController;
   private Supplier<Pose2d> positionSupplier;
 
   // target position
@@ -40,32 +43,36 @@ public class PIDAutoAlignController {
             new Constraints(
                 PID_AUTOALIGN_CONSTANTS.maxVelocity(), PID_AUTOALIGN_CONSTANTS.maxAcceleration()),
             Constants.PERIODIC_LOOP_SEC);
+
   }
   // calculate how to get to the desired position
   public void calculateLinearMovement() {
-    //basically this code says that
-    //yVel    (y-y1)
-    //---- =  ------
-    //xVel    (x-x1) 
-    double desiredSlope = (positionSupplier.get().getY()-targetPosition.getY())/(positionSupplier.get().getX()-targetPosition.getX());
-    if(targetPosition.getX()>targetPosition.getY()){ //will take longer to get to X than to Y
+    // basically this code says that
+    // yVel    (y-y1)
+    // ---- =  ------
+    // xVel    (x-x1)
+    double desiredSlope =
+        (positionSupplier.get().getY() - targetPosition.getY())
+            / (positionSupplier.get().getX() - targetPosition.getX());
+    if (targetPosition.getX() > targetPosition.getY()) { // will take longer to get to X than to Y
       xVel = controller.calculate(positionSupplier.get().getX(), targetPosition.getX());
       yVel = xVel * desiredSlope;
-    }else{ //will take longer to get to Y than to X
-      yVel = controller.calculate(positionSupplier.get().getY(),targetPosition.getY());
-      xVel = yVel/desiredSlope;
+    } else { // will take longer to get to Y than to X
+      yVel = controller.calculate(positionSupplier.get().getY(), targetPosition.getY());
+      xVel = yVel / desiredSlope;
     }
   }
 
   // update the values
   public ChassisSpeeds update() {
     calculateLinearMovement();
-    return new ChassisSpeeds(xVel, yVel, 0);
+    return new ChassisSpeeds(-xVel, -yVel, 0);
   }
   // log your data in advantage kit
-  public Pose2d getTargetPosition(){
+  public Pose2d getTargetPosition() {
     return targetPosition;
   }
+
   public void setTargetPosition(Pose2d targetPosition) {
     this.targetPosition = targetPosition;
   }

@@ -25,8 +25,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 import frc.robot.subsystems.canWatchdog.CANWatchdogConstants.CAN;
-import frc.robot.subsystems.swerve.controllers.PIDAutoAlignController;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.ironmaple.simulation.drivesims.COTS;
@@ -172,11 +170,11 @@ public class DriveConstants {
         default -> new HeadingControllerConstants(0, 0, 0, 0, 0);
       };
 
-  
-  public static final PIDAutoAlignControllerConstants PID_AUTOALIGN_CONSTANTS = 
+  public static final PIDAutoAlignControllerConstants PID_AUTOALIGN_CONSTANTS =
       switch (getRobotType()) {
-        case COMP -> new PIDAutoAlignControllerConstants(0, 0, 0, 0); /*FIXME: tune these constants*/
-        case SIM -> new PIDAutoAlignControllerConstants(0, 0, 0, 0); 
+        case COMP -> new PIDAutoAlignControllerConstants(
+            0, 0, 0, 0); /*FIXME: tune these constants*/
+        case SIM -> new PIDAutoAlignControllerConstants(1, 0.1, 0, 0);
         default -> new PIDAutoAlignControllerConstants(0, 0, 0, 0);
       };
 
@@ -259,7 +257,8 @@ public class DriveConstants {
   public record HeadingControllerConstants(
       double kP, double kD, double maxVelocity, double maxAcceleration, double tolerance) {}
 
-  public record PIDAutoAlignControllerConstants(double kP, double kD, double maxVelocity, double maxAcceleration) {}
+  public record PIDAutoAlignControllerConstants(
+      double kP, double kD, double maxVelocity, double maxAcceleration) {}
 
   public record ApproachPose(Pose2d pose) {
     public static ApproachPose[] fromPose2ds(Pose2d... poses) {

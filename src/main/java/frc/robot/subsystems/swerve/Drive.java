@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.RobotState;
@@ -43,7 +44,7 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "Swerve/YawOffset")
   private Rotation2d gyroYawOffset = new Rotation2d();
 
-  @AutoLogOutput(key = "Swerve/CurrentPosition") //TODO: I don't think that's what Nora wants
+  @AutoLogOutput(key = "Swerve/CurrentPosition")
   private Pose2d currentPosition = new Pose2d();
 
   private ChassisSpeeds targetSpeeds = new ChassisSpeeds();
@@ -109,10 +110,8 @@ public class Drive extends SubsystemBase {
       }
       case AUTO_ALIGN -> {
         if (pidAutoAlignController != null) {
-          Pose2d targetPose2d = new Pose2d(RobotState.getInstance().getAlignPose().getX(), RobotState.getInstance().getAlignPose().getY(), new Rotation2d());
-          setTargetPosition(targetPose2d);
-          targetSpeeds.vxMetersPerSecond = pidAutoAlignController.update().vxMetersPerSecond;
-          targetSpeeds.vyMetersPerSecond = pidAutoAlignController.update().vyMetersPerSecond;
+          targetSpeeds = pidAutoAlignController.update();
+          targetSpeeds.omegaRadiansPerSecond = headingController.update();
         }
       }
     }
@@ -145,14 +144,8 @@ public class Drive extends SubsystemBase {
           "Swerve/HeadingTarget", headingController.getTargetHeading().getRadians());
       Logger.recordOutput("Swerve/HeadingOutput", headingController.update());
     }
-    if (pidAutoAlignController != null) {
-      Logger.recordOutput(
-          "Swerve/PositionTargetX", pidAutoAlignController.getTargetPosition().getX());
-      Logger.recordOutput(
-          "Swerve/PositionTargetY", pidAutoAlignController.getTargetPosition().getY());
-      Logger.recordOutput("Swerve/VelocityOutputX", pidAutoAlignController.update().vxMetersPerSecond);
-      Logger.recordOutput("Swerve/VelocityOutputY", pidAutoAlignController.update().vyMetersPerSecond);
-    }
+    Logger.recordOutput("Swerve/EstimatedX", RobotState.getInstance().getEstimatedPose().getX());
+    Logger.recordOutput("Swerve/EstimatedY", RobotState.getInstance().getEstimatedPose().getY());
   }
 
   public void driveTeleopController(double xAxis, double yAxis, double omega, double acceleration) {
@@ -219,13 +212,28 @@ public class Drive extends SubsystemBase {
   }
 
   public Pose2d setTargetPosition(Pose2d targetPosition) {
+    driveMode = DriveModes.AUTO_ALIGN;
     if (pidAutoAlignController == null) {
       pidAutoAlignController = new PIDAutoAlignController(() -> currentPosition, targetPosition);
     } else {
       pidAutoAlignController.setTargetPosition(targetPosition);
     }
+    setTargetHeading(targetPosition.getRotation());
 
     return targetPosition;
+  }
+
+  public void clearTargetPositionController() {
+    pidAutoAlignController = null;
+  }
+
+  public Command setTargetPositionCommand(Pose2d targetPosition) {
+    return new FunctionalCommand(
+        () -> setTargetPosition(targetPosition),
+        () -> {},
+        (t) -> clearTargetPositionController(),
+        () -> false,
+        this);
   }
 
   public boolean isTeleop() {
