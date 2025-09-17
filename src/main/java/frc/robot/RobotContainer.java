@@ -156,13 +156,13 @@ public class RobotContainer {
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
-    driverA.x().whileTrue(swerve.setTargetPositionCommand(new Pose2d(8.6, 6, new Rotation2d(90))));
+    driverA.x().whileTrue(swerve.setTargetPositionCommand(new Pose2d(8.6, 6, new Rotation2d(20))));
 
     driverA
         .b()
         .whileTrue(
             swerve.setTargetPositionCommand(
-                RobotState.getInstance().getApproachPose(0, true, true)));
+                RobotState.getInstance().getApproachPose(.2, true, true)));
   }
 
   private void configureAutos() {
