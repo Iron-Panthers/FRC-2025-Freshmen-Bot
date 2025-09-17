@@ -67,7 +67,6 @@ public class RobotContainer {
   private RGB rgb;
   private CANWatchdog canWatchdog;
 
-  private SwerveDriveSimulation driveSimulation = null;
 
   public RobotContainer() {
 
@@ -88,25 +87,22 @@ public class RobotContainer {
           rollerSensors = new RollerSensorsIOComp();
         }
         case SIM -> {
-          driveSimulation =
-              new SwerveDriveSimulation(
-                  DriveConstants.mapleSimConfig, RobotState.getInstance().getEstimatedPose());
-          SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
+          SimulatedArena.getInstance().addDriveTrainSimulation(RobotSimState.getInstance().getDriveSimulation());
           swerve =
               new Drive(
-                  new GyroIOSim(driveSimulation.getGyroSimulation()),
+                  new GyroIOSim(RobotSimState.getInstance().getDriveSimulation().getGyroSimulation()),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[0], driveSimulation.getModules()[0]),
+                      DriveConstants.MODULE_CONFIGS[0], RobotSimState.getInstance().getDriveSimulation().getModules()[0]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[1], driveSimulation.getModules()[1]),
+                      DriveConstants.MODULE_CONFIGS[1], RobotSimState.getInstance().getDriveSimulation().getModules()[1]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[2], driveSimulation.getModules()[2]),
+                      DriveConstants.MODULE_CONFIGS[2], RobotSimState.getInstance().getDriveSimulation().getModules()[2]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[3], driveSimulation.getModules()[3]));
+                      DriveConstants.MODULE_CONFIGS[3], RobotSimState.getInstance().getDriveSimulation().getModules()[3]));
           vision =
               new Vision(
-                  new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
-                  new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
+                  new VisionIOPhotonvisionSim(4, RobotSimState.getInstance().getDriveSimulation()::getSimulatedDriveTrainPose),
+                  new VisionIOPhotonvisionSim(5, RobotSimState.getInstance().getDriveSimulation()::getSimulatedDriveTrainPose));
 
           SimulatedArena.getInstance().resetFieldForAuto();
           intake = new Intake(new IntakeIOSim());
@@ -263,7 +259,7 @@ public class RobotContainer {
 
     SimulatedArena.getInstance().simulationPeriodic();
     Logger.recordOutput(
-        "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+        "FieldSimulation/RobotPosition", RobotSimState.getInstance().getDriveSimulation().getSimulatedDriveTrainPose());
     Logger.recordOutput(
         "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
     Logger.recordOutput(
