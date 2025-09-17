@@ -48,7 +48,7 @@ public class PivotIOSim extends GenericSuperstructureIOSim implements PivotIO {
     double appliedVoltage = talon.getSimState().getMotorVoltage();
 
     // Simulate physics
-    pivotSim.setInputVoltage(0.3);
+    pivotSim.setInputVoltage(appliedVoltage);
     pivotSim.update(0.02);
 
     // Convert position and velocity from meters to rotations for the TalonFX sensor
