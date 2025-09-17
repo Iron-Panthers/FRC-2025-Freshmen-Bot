@@ -309,4 +309,8 @@ public class RobotState {
   public Pose2d getAlignPose() {
     return lastApproachPose;
   }
+
+  public Pose2d getApproachPose(double offset, boolean bside, boolean l1) {
+    return findApproachPose(offset, bside, l1).getPose();
+  }
 }

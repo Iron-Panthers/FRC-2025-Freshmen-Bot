@@ -49,7 +49,7 @@ public class PIDAutoAlignController {
     // xVel    (x-x1)
     double dy = positionSupplier.get().getY() - targetPosition.getY();
     double dx = positionSupplier.get().getX() - targetPosition.getX();
-    double desiredSlope = (dy/dx);
+    double desiredSlope = (dy / dx);
     if (dx > dy) { // will take longer to get to X than to Y
       xVel = controller.calculate(positionSupplier.get().getX(), targetPosition.getX());
       yVel = xVel * desiredSlope;
