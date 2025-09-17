@@ -163,8 +163,10 @@ public class RobotContainer {
         .whileTrue(
             swerve.setTargetPositionCommand(
                 RobotState.getInstance().getApproachPose(.2, true, true)));
-  }
 
+    driverA.y().whileTrue(swerve.setTargetPositionCommand(RobotState.getInstance().getEstimatedPose()));
+  }
+  
   private void configureAutos() {
     RobotConfig robotConfig;
     try {

@@ -112,7 +112,7 @@ public class Drive extends SubsystemBase {
         if (pidAutoAlignController != null) {
           targetSpeeds = pidAutoAlignController.update();
           targetSpeeds.omegaRadiansPerSecond = headingController.update();
-          targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, arbitraryYaw);
+          // targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, arbitraryYaw);
         }
       }
     }
@@ -213,9 +213,11 @@ public class Drive extends SubsystemBase {
   }
 
   public Pose2d setTargetPosition(Pose2d targetPosition) {
+    // targetPosition = RobotState.getInstance().getApproachPose(.2, true, true);
     driveMode = DriveModes.AUTO_ALIGN;
     if (pidAutoAlignController == null) {
-      pidAutoAlignController = new PIDAutoAlignController(() -> currentPosition, targetPosition);
+      pidAutoAlignController =
+          new PIDAutoAlignController(() -> currentPosition, () -> arbitraryYaw, targetPosition);
     } else {
       pidAutoAlignController.setTargetPosition(targetPosition);
     }

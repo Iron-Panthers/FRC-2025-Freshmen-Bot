@@ -270,8 +270,10 @@ public class DriveConstants {
     }
 
     public Pose2d getAlliancePose() {
-      return DriverStation.getAlliance().get() == Alliance.Red
-          ? FlippingUtil.flipFieldPose(pose)
+      return DriverStation.getAlliance().isPresent()
+          ? (DriverStation.getAlliance().get() == Alliance.Red
+              ? FlippingUtil.flipFieldPose(pose)
+              : pose)
           : pose;
     }
 

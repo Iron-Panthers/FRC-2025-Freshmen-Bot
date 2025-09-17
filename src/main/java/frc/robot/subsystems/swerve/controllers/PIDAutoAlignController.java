@@ -4,6 +4,7 @@ import static frc.robot.subsystems.swerve.DriveConstants.PID_AUTOALIGN_CONSTANTS
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import frc.robot.Constants;
@@ -26,11 +27,13 @@ public class PIDAutoAlignController {
   private Pose2d targetPosition;
   private double xVel;
   private double yVel;
+  private final Supplier<Rotation2d> yawSupplier;
 
-  public PIDAutoAlignController(Supplier<Pose2d> positionSupplier, Pose2d targetPosition) {
+  public PIDAutoAlignController(
+      Supplier<Pose2d> positionSupplier, Supplier<Rotation2d> yawSupplier, Pose2d targetPosition) {
     this.positionSupplier = positionSupplier;
     this.targetPosition = targetPosition;
-
+    this.yawSupplier = yawSupplier;
     // setting up the ProfiledPIDCawontroller
     controller =
         new ProfiledPIDController(
@@ -62,7 +65,8 @@ public class PIDAutoAlignController {
   // update the values
   public ChassisSpeeds update() {
     calculateLinearMovement();
-    return new ChassisSpeeds(-xVel, -yVel, 0);
+    return ChassisSpeeds.fromFieldRelativeSpeeds(
+        new ChassisSpeeds(-xVel, -yVel, 0), yawSupplier.get());
   }
   // log your data in advantage kit
   public Pose2d getTargetPosition() {

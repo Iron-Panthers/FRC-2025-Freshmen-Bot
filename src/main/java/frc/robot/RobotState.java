@@ -36,6 +36,7 @@ import org.littletonrobotics.junction.Logger;
 
 /* based on wpimath/../PoseEstimator.java */
 public class RobotState {
+
   public static final double fieldSizeX = Units.feetToMeters(57.573);
   public static final double fieldSizeY = Units.feetToMeters(26.417);
 
@@ -219,7 +220,7 @@ public class RobotState {
 
     Rotation2d horizontalOffset = bSide ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2;
 
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < 6; i++) {
       Rotation2d initialTheta = new Rotation2d(i * -Math.PI / 3);
       Pose2d directPose = offsetByVector(origin, (offset + 1.285), initialTheta);
 
@@ -238,7 +239,7 @@ public class RobotState {
 
     int closestIndex = 0;
     // absolutely not
-    for (int i = closestIndex; i < approachPoses.length; ++i) {
+    for (int i = closestIndex; i < approachPoses.length; i++) {
       if (getEstimatedPose()
               .getTranslation()
               .getDistance(approachPoses[i].getAlliancePose().getTranslation())
@@ -311,6 +312,6 @@ public class RobotState {
   }
 
   public Pose2d getApproachPose(double offset, boolean bside, boolean l1) {
-    return findApproachPose(offset, bside, l1).getPose();
+    return findApproachPose(offset, bside, l1).getAlliancePose();
   }
 }
