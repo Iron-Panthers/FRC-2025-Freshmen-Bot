@@ -5,6 +5,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.subsystems.canWatchdog.CANWatchdogConstants.CAN;
 
@@ -85,6 +86,9 @@ public class ElevatorConstants {
 
   public static final Transform3d ELEVATOR_BASE_3D_OFFSET =
       switch (Constants.getRobotType()) {
-        default -> new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+        default -> new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(-3.0), Units.inchesToMeters(0), Units.inchesToMeters(2.875)),
+            new Rotation3d(0, 0, 0));
       };
 }

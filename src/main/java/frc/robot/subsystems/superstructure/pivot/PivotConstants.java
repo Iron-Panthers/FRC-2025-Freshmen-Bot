@@ -61,7 +61,7 @@ public class PivotConstants {
       switch (Constants.getRobotType()) {
             default -> new Transform3d(
                 new Translation3d(
-                    Units.inchesToMeters(0), Units.inchesToMeters(0d), Units.inchesToMeters(0)),
+                    Units.inchesToMeters(0), Units.inchesToMeters(0d), Units.inchesToMeters(34.5)),
                 new Rotation3d(0, 0, 0));
           };
 
