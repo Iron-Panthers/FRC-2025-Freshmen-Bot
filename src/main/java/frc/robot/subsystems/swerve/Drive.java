@@ -112,7 +112,6 @@ public class Drive extends SubsystemBase {
         if (pidAutoAlignController != null) {
           targetSpeeds = pidAutoAlignController.update();
           targetSpeeds.omegaRadiansPerSecond = headingController.update();
-          // targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, arbitraryYaw);
         }
       }
     }
@@ -213,7 +212,6 @@ public class Drive extends SubsystemBase {
   }
 
   public Pose2d setTargetPosition(Pose2d targetPosition) {
-    // targetPosition = RobotState.getInstance().getApproachPose(.2, true, true);
     driveMode = DriveModes.AUTO_ALIGN;
     if (pidAutoAlignController == null) {
       pidAutoAlignController =
@@ -221,7 +219,8 @@ public class Drive extends SubsystemBase {
     } else {
       pidAutoAlignController.setTargetPosition(targetPosition);
     }
-    setTargetHeading(targetPosition.getRotation());
+
+    setTargetHeading(targetPosition.getRotation().plus(new Rotation2d(Math.PI)));
 
     return targetPosition;
   }
@@ -233,6 +232,15 @@ public class Drive extends SubsystemBase {
   public Command setTargetPositionCommand(Pose2d targetPosition) {
     return new FunctionalCommand(
         () -> setTargetPosition(targetPosition),
+        () -> {},
+        (t) -> clearTargetPositionController(),
+        () -> false,
+        this);
+  }
+
+  public Command setTargetApproachReef(double offset, boolean bside, boolean l1) {
+    return new FunctionalCommand(
+        () -> setTargetPosition(RobotState.getInstance().getApproachPose(offset, bside, l1)),
         () -> {},
         (t) -> clearTargetPositionController(),
         () -> false,
