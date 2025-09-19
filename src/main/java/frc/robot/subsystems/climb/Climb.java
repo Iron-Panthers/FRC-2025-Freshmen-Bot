@@ -6,7 +6,11 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.lib.generic_subsystems.superstructure.GenericSuperstructure;
 import frc.robot.subsystems.rgb.RGB.RGBMessages;
+import frc.robot.utility.ElasticPID;
+
 import org.littletonrobotics.junction.Logger;
+
+import com.ctre.phoenix6.signals.GravityTypeValue;
 
 public class Climb extends GenericSuperstructure<Climb.ClimbTarget> {
   public enum ClimbTarget implements GenericSuperstructure.PositionTarget {
@@ -41,6 +45,8 @@ public class Climb extends GenericSuperstructure<Climb.ClimbTarget> {
 
   // induction sensor
   private DigitalInput inductionSensor;
+  
+  ElasticPID elasticPID;
 
   // run tino the cage - sensor triggers - flash leds to tell driver - button
   // presses : reels it in
@@ -52,6 +58,8 @@ public class Climb extends GenericSuperstructure<Climb.ClimbTarget> {
     inductionSensor = new DigitalInput(INDUCTION_PORT_NUMBER);
     setPositionTarget(ClimbTarget.STOW);
     setControlMode(ControlMode.STOP);
+
+    elasticPID = new ElasticPID(io::setSlot0, GravityTypeValue.Elevator_Static, "Climb");
   }
 
   // checks if the sensor has hit the cage
@@ -63,6 +71,8 @@ public class Climb extends GenericSuperstructure<Climb.ClimbTarget> {
   public void periodic() {
 
     super.periodic();
+    elasticPID.periodic();
+
     Logger.recordOutput("Superstructure/Climb/Hit Cage?", hitCage());
     Logger.recordOutput("Superstructure/Climb/Climb State", getPositionTarget());
     SmartDashboard.putBoolean("Has Cage?", hitCage());

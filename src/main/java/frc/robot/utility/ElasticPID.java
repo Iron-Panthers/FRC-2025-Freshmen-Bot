@@ -47,17 +47,17 @@ public class ElasticPID {
 
   // Interface for lambda
   public interface SetSlot0Lambda {
-    default void setSlot0(
-        double kP,
-        double kI,
-        double kD,
-        double kS,
-        double kV,
-        double kA,
-        double kG,
-        double motionMagicAcceleration,
-        double motionMagicCruiseVelocity,
-        double motionMagicJerk,
-        GravityTypeValue gravityTypeValue) {}
-  }
+    public void setSlot0(
+      double kP,
+      double kI,
+      double kD,
+      double kS,
+      double kV,
+      double kA,
+      double kG,
+      double motionMagicAcceleration,
+      double motionMagicCruiseVelocity,
+      double motionMagicJerk,
+      GravityTypeValue gravityTypeValue);
+      }
 }

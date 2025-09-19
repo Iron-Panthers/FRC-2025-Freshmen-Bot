@@ -89,6 +89,4 @@ public class ClimbIOSim extends GenericSuperstructureIOSim implements ClimbIO {
   public void setOffset() {
     climbSim.setState(0, 0);
   }
-
-  //ElasticPID elasticPID = new ElasticPID(SetSlot0Lambda setSlot0, GravityTypeValue.Arm_Cosine, "climb")
 }
