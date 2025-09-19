@@ -14,14 +14,14 @@ public class PivotConstants {
   public static final PivotConfig PIVOT_CONFIG =
       switch (Constants.getRobotType()) {
         case COMP -> new PivotConfig(CAN.at(8, "Pivot"), CAN.at(28, "Pivot Encoder"), 0, 1);
-        case SIM -> new PivotConfig(CAN.at(8, "Pivot"), CAN.at(28, "Pivot Encoder"), 0, 1);
+        case SIM -> new PivotConfig(CAN.at(8, "Pivot"), CAN.at(28, "Pivot Encoder"), 0, 25.0 / 3);
         default -> new PivotConfig(0, 0, 0, 1);
       };
 
   public static final PIDGains GAINS =
       switch (Constants.getRobotType()) {
         case COMP -> new PIDGains(0.1, 0, 0, 0, 10.8965, 0, 0.35);
-        case SIM -> new PIDGains(0.1, 0, 0, 0, 10.8965, 0, 0.35);
+        case SIM -> new PIDGains(50, 0, 0, 0, 8 / 0.8722, 0, 0.35);
         default -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
       };
 
@@ -51,8 +51,8 @@ public class PivotConstants {
   // SOFT LIMITS NEED WORK
 
   // CURRENT LIMITS
-  public static final double UPPER_VOLT_LIMIT = 4;
-  public static final double LOWER_VOLT_LIMIT = -6;
+  public static final double UPPER_VOLT_LIMIT = 12;
+  public static final double LOWER_VOLT_LIMIT = -12;
   public static final double SUPPLY_CURRENT_LIMIT = 30;
 
   // PIVOT POSITION CONSTANTS
@@ -75,7 +75,7 @@ public class PivotConstants {
 
   public static final PivotPhysicalConstants PHYSICAL_CONSTANTS =
       switch (Constants.getRobotType()) {
-        case SIM -> new PivotPhysicalConstants(0.02, 0.706747, -1000.0, 1000, true);
+        case SIM -> new PivotPhysicalConstants(0.066, 0.497, -1000.0, 1000, true);
         case COMP -> new PivotPhysicalConstants(0.1, 0, 0, 0, false);
       };
 

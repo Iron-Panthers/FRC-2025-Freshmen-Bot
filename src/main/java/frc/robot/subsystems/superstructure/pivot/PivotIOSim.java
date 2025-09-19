@@ -43,7 +43,7 @@ public class PivotIOSim extends GenericSuperstructureIOSim implements PivotIO {
   @Override
   public void updateInputs(GenericSuperstructureIOInputs inputs) {
     // Update TalonFX state
-    talon.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
+    talon.getSimState().setSupplyVoltage(16);
 
     double appliedVoltage = talon.getSimState().getMotorVoltage();
 
