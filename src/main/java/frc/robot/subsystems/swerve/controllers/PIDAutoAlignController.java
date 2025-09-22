@@ -10,13 +10,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import frc.robot.Constants;
 import java.util.function.Supplier;
 
-// 1. go to notion and put these notes on there
-/*2. headingcontroller basically takes an angle and goes to the target angle based on calculations
-TeleopController basically takes the yaw of the joystick and translates that into an output in the drive class
-now you have to figure out what to do with the PIDAutoAlignController class:
-what you want to do is you have the position and you just need to get to another position using pid
- * you can calculate stuff in order to get the correct pid */
-
 public class PIDAutoAlignController {
 
   // supplies the position values
@@ -65,6 +58,8 @@ public class PIDAutoAlignController {
   // update the values
   public ChassisSpeeds update() {
     calculateLinearMovement();
+    xVel = Math.abs(xVel) > 0.02 ? xVel : 0;
+    yVel = Math.abs(yVel) > 0.02 ? yVel : 0;
     return ChassisSpeeds.fromFieldRelativeSpeeds(
         new ChassisSpeeds(-xVel, -yVel, 0), yawSupplier.get());
   }
