@@ -1,13 +1,9 @@
 package frc.robot.subsystems.climb;
 
-import com.ctre.phoenix6.signals.GravityTypeValue;
-
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.lib.generic_subsystems.superstructure.GenericSuperstructureIOSim;
-import frc.robot.utility.ElasticPID;
-import frc.robot.utility.ElasticPID.SetSlot0Lambda;
 
 public class ClimbIOSim extends GenericSuperstructureIOSim implements ClimbIO {
 
