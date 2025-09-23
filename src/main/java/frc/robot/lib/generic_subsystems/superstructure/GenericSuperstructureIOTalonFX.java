@@ -42,7 +42,7 @@ public abstract class GenericSuperstructureIOTalonFX implements GenericSuperstru
 
   /** Constructs a new GenericSuperstructureIOTalonFX. */
   public GenericSuperstructureIOTalonFX(GenericSuperstructureConfiguration superstructureConfig) {
-    // set the zeroing values such tha when the robot zeros it will apply the
+    // set the zeroing values such that when the robot zeros it will apply the
     // zeroing volts and
     // when it reaches a resistance from part of the mechanism, it sets the position
     // to the zeroing
