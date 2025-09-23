@@ -17,6 +17,11 @@ import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.Climb.ClimbTarget;
+import frc.robot.subsystems.climb.ClimbController;
+import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
@@ -66,7 +71,7 @@ public class RobotContainer {
   private Rollers rollers;
   private RGB rgb;
   private CANWatchdog canWatchdog;
-
+  private ClimbController climbController;
   private SwerveDriveSimulation driveSimulation = null;
 
   public RobotContainer() {
@@ -86,6 +91,7 @@ public class RobotContainer {
           canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
           intake = new Intake(new IntakeIOTalonFX());
           rollerSensors = new RollerSensorsIOComp();
+          climbController = new ClimbController(new Climb(new ClimbIOTalonFX()));
         }
         case SIM -> {
           driveSimulation =
@@ -108,6 +114,7 @@ public class RobotContainer {
                   new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
                   new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
 
+          climbController = new ClimbController(new Climb(new ClimbIOSim()));
           SimulatedArena.getInstance().resetFieldForAuto();
           intake = new Intake(new IntakeIOSim());
         }
@@ -174,6 +181,9 @@ public class RobotContainer {
             .withName("Drive Teleop"));
 
     driverA.start().onTrue(swerve.zeroGyroCommand());
+
+    driverA.x().onTrue(climbController.setPositionTargetCommand(ClimbTarget.STOW));
+    driverA.y().onTrue(climbController.setPositionTargetCommand(ClimbTarget.TOP));
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
