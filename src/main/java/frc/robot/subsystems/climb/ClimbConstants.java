@@ -9,15 +9,15 @@ import frc.robot.subsystems.canWatchdog.CANWatchdogConstants.CAN;
 public class ClimbConstants {
   public static final ClimbConfig CLIMB_CONFIG =
       switch (Constants.getRobotType()) {
-        case COMP -> new ClimbConfig(CAN.at(37, "Climb Motor"), 312.5, 45, 0.201);
-        case SIM -> new ClimbConfig(37, 312.5, 45, 0.201);
+        case COMP -> new ClimbConfig(CAN.at(37, "Climb Motor"), 1, 45, 0d);
+        case SIM -> new ClimbConfig(37, 1, 45, 0d);
         default -> new ClimbConfig(0, 1, 0, 0d);
       };
 
   public static final PIDGains GAINS =
       switch (Constants.getRobotType()) {
         case COMP -> new PIDGains(600, 0, 0, 0, 66.5, 5.714, 0);
-        case SIM -> new PIDGains(100, 0, 0, 0, 66.5, 0.0, 0.0);
+        case SIM -> new PIDGains(0.5, 0, 0, 0, 0.1236, 0.0, 0.0);
         default -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
       };
 
@@ -44,8 +44,7 @@ public class ClimbConstants {
   public record MotionMagicConfig(double acceleration, double cruiseVelocity, double jerk) {}
 
   // SOFT LIMITS
-  public static final double UPPER_EXTENSION_LIMIT =
-      0.45833333333 / CLIMB_CONFIG.reduction; // top limit is 121 rotations
+  public static final double UPPER_EXTENSION_LIMIT = 0.45833333333; // / top limit is 121 rotations
 
   // CURRENT LIMITS
   public static final double UPPER_VOLT_LIMIT = 12;
