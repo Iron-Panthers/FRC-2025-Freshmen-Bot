@@ -162,8 +162,9 @@ public class RobotContainer {
 
     driverA.start().onTrue(swerve.zeroGyroCommand());
 
-    driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.TOP));
-    driverA.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
+    driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
+    driverA.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.L3));
+    driverA.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L2));
     driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.INTAKE));
   }
 

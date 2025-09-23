@@ -14,10 +14,10 @@ public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements L
     INTAKE(-96),
     STOW(-96),
     L1(-110),
-    L2(-107),
-    L3(-117),
+    L2(223),
+    L3(185),
     // CLIMB(-115),
-    L4(149),
+    L4(-165),
     ZERO(0),
 
     // for the algae on L2
@@ -95,6 +95,6 @@ public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements L
         .plus(PivotConstants.ELEVATOR_TO_PIVOT_TRANSFORM)
         .plus(
             new Transform3d(
-                Translation3d.kZero, new Rotation3d(0, -Math.toRadians(getPosition() + 90), 0)));
+                Translation3d.kZero, new Rotation3d(0, Math.toRadians(getPosition() - 90), 0)));
   }
 }
