@@ -303,10 +303,9 @@ public class RobotContainer {
    * @return A Rotation2d representing the angle closest to the target angle
    */
   public static Rotation2d calculateSnapTargetHeading(Rotation2d targetHeading) {
-    
-    targetHeading =
-        targetHeading.rotateBy(Rotation2d.kPi); // because back of robot
-    
+
+    targetHeading = targetHeading.rotateBy(Rotation2d.kPi); // because back of robot
+
     double closest = DriveConstants.REEF_SNAP_ANGLES[0];
     for (double snap : DriveConstants.REEF_SNAP_ANGLES) {
 
