@@ -17,6 +17,11 @@ import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.Climb.ClimbTarget;
+import frc.robot.subsystems.climb.ClimbController;
+import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
@@ -62,6 +67,7 @@ public class RobotContainer {
   private RGB rgb;
   private CANWatchdog canWatchdog;
   private SuperstructureController superstructureController;
+  private ClimbController climbController;
   private SwerveDriveSimulation driveSimulation = null;
   private Elevator elevator;
 
@@ -80,6 +86,9 @@ public class RobotContainer {
           //   vision = new Vision(new VisionIOPhotonvision(4), new VisionIOPhotonvision(5));
           rgb = new RGB(new RGBIOCANdle());
           canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
+          intake = new Intake(new IntakeIOTalonFX());
+          rollerSensors = new RollerSensorsIOComp();
+          climbController = new ClimbController(new Climb(new ClimbIOTalonFX()));
         }
         case SIM -> {
           driveSimulation =
@@ -105,6 +114,7 @@ public class RobotContainer {
               new SuperstructureController(
                   new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
 
+          climbController = new ClimbController(new Climb(new ClimbIOSim()));
           SimulatedArena.getInstance().resetFieldForAuto();
         }
       }
@@ -162,10 +172,11 @@ public class RobotContainer {
 
     driverA.start().onTrue(swerve.zeroGyroCommand());
 
-    driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
-    driverA.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.L3));
-    driverA.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L2));
-    driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.INTAKE));
+    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
+
+    // DONT WORK, NEED TO MAKE ROLLERS MOVE
+    driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
+    driverA.y().onTrue(rollers.setTargetCommand(RollerState.HOLD));
   }
 
   private void configureAutos() {
