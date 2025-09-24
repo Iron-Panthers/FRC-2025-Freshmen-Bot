@@ -4,7 +4,12 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.util.FlippingUtil;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -166,7 +171,21 @@ public class RobotContainer {
                       -driverA.getLeftY(),
                       -driverA.getLeftX(),
                       driverA.getLeftTriggerAxis() - driverA.getRightTriggerAxis(),
+                      // In SIM-2025, the commented line of code below is present, but here there
+                      // isn't a superstructure variable yet.
+                      // superstructure.getElevatorPosition() > 3 ? 3 :
                       DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
+
+                  if (Math.abs(driverA.getLeftTriggerAxis()) > 0.1
+                      || Math.abs(driverA.getRightTriggerAxis()) > 0.1) {
+                    swerve.clearHeadingControl();
+
+                    // In SIM-2025, the "true" is a variable called autoAngle that is never changed
+                    // from true. I'm not sure what to do with this exactly...
+                  } else if (true) {
+
+                    determineSwerveTarget();
+                  }
                 })
             .withName("Drive Teleop"));
 
@@ -249,11 +268,94 @@ public class RobotContainer {
     SmartDashboard.putString("Current Auto", autoChooser.get().getName());
   }
 
-  public static double relativeAngularDifference(double currentAngle, double newAngle) {
-    double a = ((currentAngle - newAngle) % 360 + 360) % 360;
-    double b = ((currentAngle - newAngle) % 360 + 360) % 360;
-    return a < b ? a : -b;
+  // #region Helper functions May wrote or copied from elsewhere cuz she's a little plagarizer >:(
+
+  /**
+   * Wraps around the value of a double to 0 - 360.
+   *
+   * @param angle
+   * @return A double with a value from 0 - 360 (but not including 360).
+   */
+  public static double doubleToDegrees(double angle) {
+    return (angle % 360 + 360) % 360;
   }
+
+  /**
+   * Outputs the relative angular difference of the two angles given. (I rewrote this because the
+   * old one seemed broken to me. I'm not really sure though??? Can someone check how it's meant to
+   * work please?)
+   *
+   * @param currentAngle
+   * @param newAngle
+   * @return A double representing an angle in degrees from -180 to 180.
+   */
+  public static double relativeAngularDifference(double currentAngle, double newAngle) {
+    return (doubleToDegrees(newAngle - currentAngle) + 180) % 360 - 180;
+  }
+
+  /**
+   * Snaps an angle towards the closest value in REEF_SNAP_ANGLES.
+   *
+   * @param targetHeading A rotation2d representing the target angle
+   * @return A Rotation2d representing the angle closest to the target angle
+   */
+  public static Rotation2d calculateSnapTargetHeading(Rotation2d targetHeading) {
+
+    targetHeading = targetHeading.rotateBy(Rotation2d.kPi); // because back of robot
+
+    double closest = DriveConstants.REEF_SNAP_ANGLES[0];
+    for (double snap : DriveConstants.REEF_SNAP_ANGLES) {
+
+      if (Math.abs(relativeAngularDifference(targetHeading.getDegrees(), snap))
+          < Math.abs(relativeAngularDifference(targetHeading.getDegrees(), closest))) {
+
+        closest = snap;
+      }
+    }
+
+    return new Rotation2d(Math.toRadians(closest));
+  }
+
+  /** Determines what direction to snap the swerve target to. */
+  public void determineSwerveTarget() {
+
+    // Repeated variables:
+    Translation2d robotPosition = RobotState.getInstance().getEstimatedPose().getTranslation();
+    Rotation2d robotAngleToReef = robotPosition.minus(DriveConstants.REEF_TRANSLATION2D).getAngle();
+    boolean isTeamRed =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+
+    // Snap towards right corner when close
+    if (robotPosition.getDistance(DriveConstants.RIGHT_CORNER) < 3) {
+      swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)));
+
+      // Snap towards left corner when close
+    } else if (robotPosition.getDistance(DriveConstants.LEFT_CORNER) < 3) {
+      swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)));
+
+      // Snap towards the reef when close
+    } else if (robotPosition.getDistance(DriveConstants.REEF_TRANSLATION2D) < 2) {
+
+      swerve.setTargetHeading(
+          isTeamRed
+              ? calculateSnapTargetHeading(robotAngleToReef)
+              : FlippingUtil.flipFieldRotation(calculateSnapTargetHeading(robotAngleToReef)));
+
+      // Snap towards climb zone when close and in climb phase
+    } else if (MathUtil.isNear(DriveConstants.CLIMB_ZONE_CENTER.getX(), robotPosition.getX(), 2)
+        && MathUtil.isNear(DriveConstants.CLIMB_ZONE_CENTER.getY(), robotPosition.getY(), 2)
+    /* && superstructure.getTargetState() == SuperstructureState.CLIMB */
+    /* TO-DO: Once the state system is implemented, uncomment this line! */ ) {
+      swerve.setTargetHeading(new Rotation2d(Math.PI / 2));
+
+      // If none of the previous conditions match, snap towards reef
+    } else {
+      swerve.setTargetHeading(
+          robotAngleToReef.minus(isTeamRed ? Rotation2d.kPi : Rotation2d.kZero));
+    }
+  }
+  // #endregion
 
   public void updateSimulation() {
     if (Constants.getRobotMode() != Constants.Mode.SIM) return;
