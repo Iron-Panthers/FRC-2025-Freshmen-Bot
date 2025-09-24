@@ -25,14 +25,12 @@ import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
-import frc.robot.subsystems.rollers.Rollers;
-import frc.robot.subsystems.rollers.Rollers.RollerState;
-import frc.robot.subsystems.rollers.intake.Intake;
-import frc.robot.subsystems.rollers.intake.IntakeIO;
-import frc.robot.subsystems.rollers.intake.IntakeIOSim;
-import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
-import frc.robot.subsystems.rollers.sensors.RollerSensorsIO;
-import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
+import frc.robot.subsystems.superstructure.SuperstructureController;
+import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
+import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
+import frc.robot.subsystems.superstructure.pivot.Pivot;
+import frc.robot.subsystems.superstructure.pivot.PivotIOSim;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.DriveConstants;
 import frc.robot.subsystems.swerve.GyroIO;
@@ -66,13 +64,12 @@ public class RobotContainer {
 
   private Drive swerve;
   private Vision vision;
-  private Intake intake;
-  private RollerSensorsIO rollerSensors;
-  private Rollers rollers;
   private RGB rgb;
   private CANWatchdog canWatchdog;
+  private SuperstructureController superstructureController;
   private ClimbController climbController;
   private SwerveDriveSimulation driveSimulation = null;
+  private Elevator elevator;
 
   public RobotContainer() {
 
@@ -113,10 +110,12 @@ public class RobotContainer {
               new Vision(
                   new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
                   new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
+          superstructureController =
+              new SuperstructureController(
+                  new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
 
           climbController = new ClimbController(new Climb(new ClimbIOSim()));
           SimulatedArena.getInstance().resetFieldForAuto();
-          intake = new Intake(new IntakeIOSim());
         }
       }
     }
@@ -133,15 +132,6 @@ public class RobotContainer {
     if (vision == null) {
       vision = new Vision(new VisionIO() {}, new VisionIO() {});
     }
-
-    if (intake == null) {
-
-      intake = new Intake(new IntakeIO() {});
-    }
-    if (rollerSensors == null) {
-      rollerSensors = new RollerSensorsIO() {};
-    }
-    rollers = new Rollers(intake, rollerSensors);
 
     if (canWatchdog == null) {
       canWatchdog = new CANWatchdog(new CANWatchdogIO() {}, rgb);
@@ -181,9 +171,6 @@ public class RobotContainer {
             .withName("Drive Teleop"));
 
     driverA.start().onTrue(swerve.zeroGyroCommand());
-
-    driverA.x().onTrue(climbController.setPositionTargetCommand(ClimbTarget.STOW));
-    driverA.y().onTrue(climbController.setPositionTargetCommand(ClimbTarget.TOP));
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
