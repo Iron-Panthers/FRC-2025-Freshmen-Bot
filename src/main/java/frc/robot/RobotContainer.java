@@ -49,7 +49,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonvisionSim;
 import java.util.function.BooleanSupplier;
 import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -96,21 +95,24 @@ public class RobotContainer {
           climbController = new ClimbController(new Climb(new ClimbIOTalonFX()));
         }
         case SIM -> {
-          driveSimulation =
-              new SwerveDriveSimulation(
-                  DriveConstants.mapleSimConfig, RobotState.getInstance().getEstimatedPose());
-          SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
+          SimulatedArena.getInstance()
+              .addDriveTrainSimulation(RobotSimState.getInstance().getDriveSimulation());
           swerve =
               new Drive(
-                  new GyroIOSim(driveSimulation.getGyroSimulation()),
+                  new GyroIOSim(
+                      RobotSimState.getInstance().getDriveSimulation().getGyroSimulation()),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[0], driveSimulation.getModules()[0]),
+                      DriveConstants.MODULE_CONFIGS[0],
+                      RobotSimState.getInstance().getDriveSimulation().getModules()[0]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[1], driveSimulation.getModules()[1]),
+                      DriveConstants.MODULE_CONFIGS[1],
+                      RobotSimState.getInstance().getDriveSimulation().getModules()[1]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[2], driveSimulation.getModules()[2]),
+                      DriveConstants.MODULE_CONFIGS[2],
+                      RobotSimState.getInstance().getDriveSimulation().getModules()[2]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[3], driveSimulation.getModules()[3]));
+                      DriveConstants.MODULE_CONFIGS[3],
+                      RobotSimState.getInstance().getDriveSimulation().getModules()[3]));
           vision =
               new Vision(
                   new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
@@ -193,9 +195,12 @@ public class RobotContainer {
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
-    // DONT WORK, NEED TO MAKE ROLLERS MOVE
+    // Make rollers move
     driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
     driverA.y().onTrue(rollers.setTargetCommand(RollerState.HOLD));
+
+    driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
+    driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L1));
   }
 
   private void configureAutos() {
@@ -362,7 +367,8 @@ public class RobotContainer {
 
     SimulatedArena.getInstance().simulationPeriodic();
     Logger.recordOutput(
-        "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+        "FieldSimulation/RobotPosition",
+        RobotSimState.getInstance().getDriveSimulation().getSimulatedDriveTrainPose());
     Logger.recordOutput(
         "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
     Logger.recordOutput(
