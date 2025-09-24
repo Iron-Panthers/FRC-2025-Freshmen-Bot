@@ -76,9 +76,9 @@ public class PIDAutoAlignController {
     Translation2d linearVelocityDiff = linearVelocity.minus(pastLinearVelocity);
     clampedVelocityDiff =
         MathUtil.clamp(
-                Math.abs(linearVelocity.getDistance(pastLinearVelocity)),
-                0,
-                PID_AUTOALIGN_CONSTANTS.maxAcceleration() * (Constants.PERIODIC_LOOP_SEC));
+            Math.abs(linearVelocity.getDistance(pastLinearVelocity)),
+            0,
+            PID_AUTOALIGN_CONSTANTS.maxAcceleration() * (Constants.PERIODIC_LOOP_SEC));
     Rotation2d velocityTheta;
     if (linearVelocityDiff.getX() != 0 || linearVelocityDiff.getY() != 0) {
       velocityTheta = linearVelocityDiff.getAngle();
@@ -88,12 +88,17 @@ public class PIDAutoAlignController {
     Translation2d newVelocity =
         pastLinearVelocity.plus(new Translation2d(clampedVelocityDiff, velocityTheta));
     pastLinearVelocity = newVelocity;
-
-    return ChassisSpeeds.fromFieldRelativeSpeeds(
-        -newVelocity.getX() * PID_AUTOALIGN_CONSTANTS.maxVelocity(),
-        -newVelocity.getY() * PID_AUTOALIGN_CONSTANTS.maxVelocity(),
-        0,
-        yawSupplier.get());
+    xVel = newVelocity.getX() * PID_AUTOALIGN_CONSTANTS.maxVelocity();
+    yVel = newVelocity.getY() * PID_AUTOALIGN_CONSTANTS.maxVelocity();
+    double dy = positionSupplier.get().getY() - targetPosition.getY();
+    double dx = positionSupplier.get().getX() - targetPosition.getX();
+    double desiredSlope = (dy / dx);
+    if (dx > dy) {
+      yVel = xVel * desiredSlope;
+    } else {
+      xVel = yVel / desiredSlope;
+    }
+    return ChassisSpeeds.fromFieldRelativeSpeeds(-xVel, -yVel, 0, yawSupplier.get());
   }
   // log your data in advantage kit
   public Pose2d getTargetPosition() {
