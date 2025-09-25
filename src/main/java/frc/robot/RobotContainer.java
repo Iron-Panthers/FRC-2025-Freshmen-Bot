@@ -30,6 +30,11 @@ import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
+import frc.robot.subsystems.rollers.Rollers;
+import frc.robot.subsystems.rollers.Rollers.RollerState;
+import frc.robot.subsystems.rollers.intake.Intake;
+import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
+import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
 import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
@@ -49,6 +54,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonvisionSim;
 import java.util.function.BooleanSupplier;
 import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -73,6 +79,9 @@ public class RobotContainer {
   private SuperstructureController superstructureController;
   private ClimbController climbController;
   private SwerveDriveSimulation driveSimulation = null;
+  private Rollers rollers;
+  private RollerSensorsIOComp rollerSensors;
+  private Intake intake;
   private Elevator elevator;
 
   public RobotContainer() {
