@@ -72,8 +72,8 @@ public class RobotSimState {
   private static RobotSimState instance;
 
   public static RobotSimState getInstance() {
-    if (Constants.getRobotType() != RobotType.SIM) { // FIXME: I don't like it
-      return null;
+    if (Constants.getRobotType() != RobotType.SIM) {
+      System.err.println("ROBOT SHOULD NOT ACCESS SIM STATE IN NORMAL MODE");
     }
     if (instance == null) {
       instance = new RobotSimState();
