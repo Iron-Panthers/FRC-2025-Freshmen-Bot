@@ -51,6 +51,7 @@ public class PivotConstants {
   // SOFT LIMITS NEED WORK
 
   // CURRENT LIMITS
+  // TODO: Upper limit & lower limit no exceed 3 volts
   public static final double UPPER_VOLT_LIMIT = 12;
   public static final double LOWER_VOLT_LIMIT = -12;
   public static final double SUPPLY_CURRENT_LIMIT = 30;
