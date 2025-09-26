@@ -16,12 +16,9 @@ public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements L
     L1(-110),
     L2(223),
     L3(185),
-    // CLIMB(-115),
+    CLIMB(-115),
     L4(-165),
-    ZERO(0),
-
-    // for the algae on L2
-    DESCORE_LOW(-15);
+    ZERO(0);
 
     private double position;
     private static final double EPSILON = PivotConstants.POSITION_TARGET_EPSILON;
