@@ -24,6 +24,7 @@ import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbController;
+import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
@@ -79,6 +80,7 @@ public class RobotContainer {
   private CANWatchdog canWatchdog;
   private SuperstructureController superstructureController;
   private ClimbController climbController;
+  private Climb climb;
   private Rollers rollers;
   private RollerSensorsIOComp rollerSensors;
   private Intake intake;
@@ -101,7 +103,7 @@ public class RobotContainer {
           canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
           intake = new Intake(new IntakeIOTalonFX());
           rollerSensors = new RollerSensorsIOComp();
-          climbController = new ClimbController(new Climb(new ClimbIOTalonFX()));
+          climb = new Climb(new ClimbIOTalonFX());
         }
         case SIM -> {
           SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
@@ -152,13 +154,18 @@ public class RobotContainer {
       rgb = new RGB(new RGBIO() {});
     }
 
-    if(intake == null){
+    if (intake == null) {
       intake = new Intake(new IntakeIO() {});
     }
-    if(rollerSensors == null){
-      rollerSensors = new RollerSensorsIOComp(){};
+    if (rollerSensors == null) {
+      rollerSensors = new RollerSensorsIOComp() {};
     }
     rollers = new Rollers(intake, rollerSensors);
+
+    if (climb == null){
+      climb = new Climb(new ClimbIO() {});
+    }
+    climbController = new ClimbController(climb);
 
     nameCommands();
     configureAutos();
