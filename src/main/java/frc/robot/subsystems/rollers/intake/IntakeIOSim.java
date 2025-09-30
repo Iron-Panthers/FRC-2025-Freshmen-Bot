@@ -1,11 +1,13 @@
 package frc.robot.subsystems.rollers.intake;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.subsystems.rollers.intake.IntakeConstants.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import frc.robot.RobotSimState;
 import frc.robot.lib.generic_subsystems.rollers.*;
 
 public class IntakeIOSim extends GenericRollersIOSim implements IntakeIO {
@@ -43,5 +45,9 @@ public class IntakeIOSim extends GenericRollersIOSim implements IntakeIO {
     inputs.velocityRadsPerSec = velocityRPS;
     inputs.appliedVolts = appliedVoltage;
     inputs.supplyCurrentAmps = 1.0; // Not simulated
+
+    // Update robot sim state
+    RobotSimState.getInstance()
+        .updateCoralPosition(MetersPerSecond.of(ROLLER_CIRCUMFERENCE * velocityRPS));
   }
 }

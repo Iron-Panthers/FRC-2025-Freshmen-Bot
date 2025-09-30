@@ -18,11 +18,14 @@ public class Rollers extends SubsystemBase {
     EJECT_L1,
     EJECT_L2,
     EJECT_L3,
+    // TODO: make EJECT_L4
     HOLD
   }
 
   private final Intake intake;
   private final RollerSensorsIO sensorsIO;
+
+  // TODO:Have an alternative to force intake/cleaner implementation
   // private double ejectTime = 0;
   private double intakeTime = 0;
   private double timeSinceStopped = 0;
@@ -39,7 +42,6 @@ public class Rollers extends SubsystemBase {
   public void periodic() {
     sensorsIO.updateInputs(sensorsInputs);
     Logger.processInputs("RollerSensors", sensorsInputs);
-    intake.setVoltageTarget(Intake.Target.IDLE);
 
     switch (targetState) {
       case IDLE -> {
@@ -47,7 +49,7 @@ public class Rollers extends SubsystemBase {
       }
       case INTAKE -> {
         intake.setVoltageTarget(Intake.Target.INTAKE);
-        if (intakeDetected()) {
+        if (intakeSensorsTriggered()) {
           this.targetState = RollerState.HOLD;
         }
       }
@@ -74,8 +76,13 @@ public class Rollers extends SubsystemBase {
       case EJECT_L3 -> {
         intake.setVoltageTarget(Intake.Target.EJECT_L3);
       }
+        // you should never reach this
+      default -> {
+        intake.setVoltageTarget(Intake.Target.IDLE);
+        System.err.println("PLEASE ADD INTAKE STATE, YOU ABSOLUTE BUFFOON");
+      }
     }
-    if (intakeDetected()) {
+    if (intakeSensorsTriggered()) {
       timeSinceStopped += 0.02;
     } else {
       timeSinceStopped = 0;
@@ -101,11 +108,11 @@ public class Rollers extends SubsystemBase {
         });
   }
 
-  public boolean intakeDetected() {
+  public boolean intakeSensorsTriggered() {
     return sensorsInputs.intakeDetected;
   }
 
   public boolean readyToRaise() {
-    return intakeDetected() && timeSinceStopped > 0.1;
+    return intakeSensorsTriggered() && timeSinceStopped > 0.1;
   }
 }

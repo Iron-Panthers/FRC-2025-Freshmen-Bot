@@ -4,7 +4,12 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.util.FlippingUtil;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -18,8 +23,8 @@ import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
 import frc.robot.subsystems.climb.Climb;
-import frc.robot.subsystems.climb.Climb.ClimbTarget;
 import frc.robot.subsystems.climb.ClimbController;
+import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
@@ -29,10 +34,14 @@ import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
 import frc.robot.subsystems.rollers.intake.IntakeIO;
-import frc.robot.subsystems.rollers.intake.IntakeIOSim;
 import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
-import frc.robot.subsystems.rollers.sensors.RollerSensorsIO;
 import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
+import frc.robot.subsystems.superstructure.SuperstructureController;
+import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
+import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
+import frc.robot.subsystems.superstructure.pivot.Pivot;
+import frc.robot.subsystems.superstructure.pivot.PivotIOSim;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.DriveConstants;
 import frc.robot.subsystems.swerve.GyroIO;
@@ -64,15 +73,18 @@ public class RobotContainer {
   private final CommandXboxController driverA = new CommandXboxController(0);
   private final CommandXboxController driverB = new CommandXboxController(1);
 
+  private boolean autoAngle = true;
   private Drive swerve;
   private Vision vision;
-  private Intake intake;
-  private RollerSensorsIO rollerSensors;
-  private Rollers rollers;
   private RGB rgb;
   private CANWatchdog canWatchdog;
+  private SuperstructureController superstructureController;
   private ClimbController climbController;
-  private SwerveDriveSimulation driveSimulation = null;
+  private Climb climb;
+  private Rollers rollers;
+  private RollerSensorsIOComp rollerSensors;
+  private Intake intake;
+  private Elevator elevator;
 
   public RobotContainer() {
 
@@ -91,12 +103,10 @@ public class RobotContainer {
           canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
           intake = new Intake(new IntakeIOTalonFX());
           rollerSensors = new RollerSensorsIOComp();
-          climbController = new ClimbController(new Climb(new ClimbIOTalonFX()));
+          climb = new Climb(new ClimbIOTalonFX());
         }
         case SIM -> {
-          driveSimulation =
-              new SwerveDriveSimulation(
-                  DriveConstants.mapleSimConfig, RobotState.getInstance().getEstimatedPose());
+          SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
           SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
           swerve =
               new Drive(
@@ -113,10 +123,12 @@ public class RobotContainer {
               new Vision(
                   new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
                   new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
+          superstructureController =
+              new SuperstructureController(
+                  new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
 
           climbController = new ClimbController(new Climb(new ClimbIOSim()));
           SimulatedArena.getInstance().resetFieldForAuto();
-          intake = new Intake(new IntakeIOSim());
         }
       }
     }
@@ -134,15 +146,6 @@ public class RobotContainer {
       vision = new Vision(new VisionIO() {}, new VisionIO() {});
     }
 
-    if (intake == null) {
-
-      intake = new Intake(new IntakeIO() {});
-    }
-    if (rollerSensors == null) {
-      rollerSensors = new RollerSensorsIO() {};
-    }
-    rollers = new Rollers(intake, rollerSensors);
-
     if (canWatchdog == null) {
       canWatchdog = new CANWatchdog(new CANWatchdogIO() {}, rgb);
     }
@@ -150,6 +153,19 @@ public class RobotContainer {
     if (rgb == null) {
       rgb = new RGB(new RGBIO() {});
     }
+
+    if (intake == null) {
+      intake = new Intake(new IntakeIO() {});
+    }
+    if (rollerSensors == null) {
+      rollerSensors = new RollerSensorsIOComp() {};
+    }
+    rollers = new Rollers(intake, rollerSensors);
+
+    if (climb == null){
+      climb = new Climb(new ClimbIO() {});
+    }
+    climbController = new ClimbController(climb);
 
     nameCommands();
     configureAutos();
@@ -176,20 +192,34 @@ public class RobotContainer {
                       -driverA.getLeftY(),
                       -driverA.getLeftX(),
                       driverA.getLeftTriggerAxis() - driverA.getRightTriggerAxis(),
+                      // In SIM-2025, the commented line of code below is present, but here there
+                      // isn't a superstructure variable yet.
+                      // superstructure.getElevatorPosition() > 3 ? 3 :
                       DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
+
+                  if (Math.abs(driverA.getLeftTriggerAxis()) > 0.1
+                      || Math.abs(driverA.getRightTriggerAxis()) > 0.1) {
+                    swerve.clearHeadingControl();
+
+                    // In SIM-2025, the "true" is a variable called autoAngle that is never changed
+                    // from true. I'm not sure what to do with this exactly...
+                  } else if (autoAngle) {
+
+                    determineSwerveTarget();
+                  }
                 })
             .withName("Drive Teleop"));
 
     driverA.start().onTrue(swerve.zeroGyroCommand());
 
-    driverA.x().onTrue(climbController.setPositionTargetCommand(ClimbTarget.STOW));
-    driverA.y().onTrue(climbController.setPositionTargetCommand(ClimbTarget.TOP));
-
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
-    // DONT WORK, NEED TO MAKE ROLLERS MOVE
+    // Make rollers move
     driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
-    driverA.y().onTrue(rollers.setTargetCommand(RollerState.HOLD));
+    driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
+
+    driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
+    driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L1));
   }
 
   private void configureAutos() {
@@ -262,10 +292,90 @@ public class RobotContainer {
     SmartDashboard.putString("Current Auto", autoChooser.get().getName());
   }
 
+  /**
+   * Wraps around the value of a double to 0 - 360.
+   *
+   * @param angle
+   * @return A double with a value from 0 - 360 (but not including 360).
+   */
+  public static double doubleToDegrees(double angle) {
+    return (angle % 360 + 360) % 360;
+  }
+
+  /**
+   * Outputs the relative angular difference of the two angles given. (I rewrote this because the
+   * old one seemed broken to me. I'm not really sure though??? Can someone check how it's meant to
+   * work please?)
+   *
+   * @param currentAngle
+   * @param newAngle
+   * @return A double representing an angle in degrees from -180 to 180.
+   */
   public static double relativeAngularDifference(double currentAngle, double newAngle) {
-    double a = ((currentAngle - newAngle) % 360 + 360) % 360;
-    double b = ((currentAngle - newAngle) % 360 + 360) % 360;
-    return a < b ? a : -b;
+    return (doubleToDegrees(newAngle - currentAngle) + 180) % 360 - 180;
+  }
+
+  /**
+   * Snaps an angle towards the closest value in REEF_SNAP_ANGLES.
+   *
+   * @param targetHeading A rotation2d representing the target angle
+   * @return A Rotation2d representing the angle closest to the target angle
+   */
+  public static Rotation2d calculateSnapTargetHeading(Rotation2d targetHeading) {
+
+    targetHeading = targetHeading.rotateBy(Rotation2d.kPi); // because back of robot
+
+    // TODO: Maybe make this *** mathematica ***
+    double closest = DriveConstants.REEF_SNAP_ANGLES[0];
+    for (double snap : DriveConstants.REEF_SNAP_ANGLES) {
+
+      if (Math.abs(relativeAngularDifference(targetHeading.getDegrees(), snap))
+          < Math.abs(relativeAngularDifference(targetHeading.getDegrees(), closest))) {
+
+        closest = snap;
+      }
+    }
+
+    return new Rotation2d(Math.toRadians(closest));
+  }
+
+  /** Determines what direction to snap the swerve target to. */
+  public void determineSwerveTarget() {
+
+    // Repeated variables:
+    Translation2d robotPosition = RobotState.getInstance().getEstimatedPose().getTranslation();
+    Rotation2d robotAngleToReef = robotPosition.minus(DriveConstants.REEF_TRANSLATION2D).getAngle();
+    boolean isTeamRed =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+
+    // Snap towards right station when close
+    if (robotPosition.getDistance(DriveConstants.RIGHT_CORNER) < 3) {
+      swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)));
+
+      // Snap towards left station when close
+    } else if (robotPosition.getDistance(DriveConstants.LEFT_CORNER) < 3) {
+      swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)));
+
+      // Snap towards the reef when close
+    } else if (robotPosition.getDistance(DriveConstants.REEF_TRANSLATION2D) < 2) {
+
+      swerve.setTargetHeading(
+          isTeamRed
+              ? calculateSnapTargetHeading(robotAngleToReef)
+              : FlippingUtil.flipFieldRotation(calculateSnapTargetHeading(robotAngleToReef)));
+
+      // Snap towards climb zone when close and in climb phase
+    } else if (MathUtil.isNear(DriveConstants.CLIMB_ZONE_CENTER.getX(), robotPosition.getX(), 2)
+        && MathUtil.isNear(DriveConstants.CLIMB_ZONE_CENTER.getY(), robotPosition.getY(), 2)
+        && superstructureController.getTargetState() == SuperstructureState.CLIMB) {
+      swerve.setTargetHeading(new Rotation2d(Math.PI / 2));
+
+      // If none of the previous conditions match, snap towards reef
+    } else {
+      swerve.setTargetHeading(
+          robotAngleToReef.minus(isTeamRed ? Rotation2d.kPi : Rotation2d.kZero));
+    }
   }
 
   public void updateSimulation() {
@@ -273,7 +383,8 @@ public class RobotContainer {
 
     SimulatedArena.getInstance().simulationPeriodic();
     Logger.recordOutput(
-        "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+        "FieldSimulation/RobotPosition",
+        RobotSimState.getInstance().getDriveSimulation().getSimulatedDriveTrainPose());
     Logger.recordOutput(
         "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
     Logger.recordOutput(
