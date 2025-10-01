@@ -127,7 +127,7 @@ public class RobotContainer {
               new SuperstructureController(
                   new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
 
-          climbController = new ClimbController(new Climb(new ClimbIOSim()));
+          climb = new Climb(new ClimbIOSim());
           SimulatedArena.getInstance().resetFieldForAuto();
         }
       }
@@ -162,7 +162,7 @@ public class RobotContainer {
     }
     rollers = new Rollers(intake, rollerSensors);
 
-    if (climb == null){
+    if (climb == null) {
       climb = new Climb(new ClimbIO() {});
     }
     climbController = new ClimbController(climb);
