@@ -104,8 +104,9 @@ public class PIDAutoAlignController {
   }
 
   public void setTargetPosition(Pose2d targetPosition) {
+    startPosition = positionSupplier.get();
     this.targetPosition = targetPosition;
-    this.translTargetPosition =
+    translTargetPosition =
         new Pose2d(
             targetPosition.getX() - startPosition.getX(),
             targetPosition.getY() - startPosition.getY(),
