@@ -146,6 +146,10 @@ public class Drive extends SubsystemBase {
     }
     Logger.recordOutput("Swerve/EstimatedX", RobotState.getInstance().getEstimatedPose().getX());
     Logger.recordOutput("Swerve/EstimatedY", RobotState.getInstance().getEstimatedPose().getY());
+    if (pidAutoAlignController != null) {
+      Logger.recordOutput("Swerve/PID/VelocityX", pidAutoAlignController.getXVel());
+      Logger.recordOutput("Swerve/PID/VelocityY", pidAutoAlignController.getYVel());
+    }
   }
 
   public void driveTeleopController(double xAxis, double yAxis, double omega, double acceleration) {
