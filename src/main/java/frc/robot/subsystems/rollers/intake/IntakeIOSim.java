@@ -35,7 +35,7 @@ public class IntakeIOSim extends GenericRollersIOSim implements IntakeIO {
 
     double rotations = 0; // can't really be simulated
     // Correct unit conversion: meters/s to rotations/s
-    double velocityRPS = intakeSim.getAngularVelocityRadPerSec() * REDUCTION;
+    double velocityRPS = intakeSim.getAngularVelocityRadPerSec() / REDUCTION;
 
     talon.getSimState().setRawRotorPosition(rotations);
     talon.getSimState().setRotorVelocity(velocityRPS);

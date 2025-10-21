@@ -32,6 +32,8 @@ import frc.robot.subsystems.rgb.RGBIOCANdle;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
+import frc.robot.subsystems.rollers.intake.IntakeIO;
+import frc.robot.subsystems.rollers.intake.IntakeIOSim;
 import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
@@ -129,6 +131,7 @@ public class RobotContainer {
 
           climbController = new ClimbController(new Climb(new ClimbIOSim()));
           SimulatedArena.getInstance().resetFieldForAuto();
+          intake = new Intake(new IntakeIOSim());
         }
       }
     }
@@ -153,16 +156,14 @@ public class RobotContainer {
     if (rgb == null) {
       rgb = new RGB(new RGBIO() {});
     }
-    if (rollers == null) {
-      if (intake == null) {
-        intake = new Intake(new IntakeIOTalonFX());
-      }
-      if (rollerSensors == null) {
-        rollerSensors = new RollerSensorsIOComp();
-      }
-
-      rollers = new Rollers(intake, rollerSensors);
+    if (intake == null) {
+      intake = new Intake(new IntakeIO() {});
     }
+    if (rollerSensors == null) {
+      rollerSensors = new RollerSensorsIOComp() {};
+    }
+
+    rollers = new Rollers(intake, rollerSensors);
 
     nameCommands();
     configureAutos();
