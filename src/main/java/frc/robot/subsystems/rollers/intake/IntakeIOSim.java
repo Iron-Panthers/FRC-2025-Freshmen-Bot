@@ -11,7 +11,6 @@ import frc.robot.RobotSimState;
 import frc.robot.lib.generic_subsystems.rollers.*;
 
 public class IntakeIOSim extends GenericRollersIOSim implements IntakeIO {
-
   private final FlywheelSim intakeSim;
 
   public IntakeIOSim() {

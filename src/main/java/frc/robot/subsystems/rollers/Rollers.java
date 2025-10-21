@@ -18,6 +18,7 @@ public class Rollers extends SubsystemBase {
     EJECT_L1,
     EJECT_L2,
     EJECT_L3,
+    EJECT_L4,
     HOLD
   }
 
