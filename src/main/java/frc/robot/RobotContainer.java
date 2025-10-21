@@ -23,15 +23,18 @@ import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
 import frc.robot.subsystems.climb.Climb;
-import frc.robot.subsystems.climb.Climb.ClimbTarget;
 import frc.robot.subsystems.climb.ClimbController;
 import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
+import frc.robot.subsystems.rollers.Rollers;
+import frc.robot.subsystems.rollers.Rollers.RollerState;
+import frc.robot.subsystems.rollers.intake.Intake;
+import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
+import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
-import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
 import frc.robot.subsystems.superstructure.pivot.Pivot;
@@ -46,9 +49,9 @@ import frc.robot.subsystems.swerve.ModuleIOTalonFXReal;
 import frc.robot.subsystems.swerve.ModuleIOTalonFXSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonvisionSim;
 import java.util.function.BooleanSupplier;
 import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -73,7 +76,10 @@ public class RobotContainer {
   private SuperstructureController superstructureController;
   private ClimbController climbController;
   private SwerveDriveSimulation driveSimulation = null;
+  private Intake intake;
   private Elevator elevator;
+  private RollerSensorsIOComp rollerSensors;
+  private Rollers rollers;
 
   public RobotContainer() {
 
@@ -113,10 +119,10 @@ public class RobotContainer {
                   new ModuleIOTalonFXSim(
                       DriveConstants.MODULE_CONFIGS[3],
                       RobotSimState.getInstance().getDriveSimulation().getModules()[3]));
-          vision =
-              new Vision(
-                  new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
-                  new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
+          // vision =
+          //     new Vision(
+          //         new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
+          //         new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
           superstructureController =
               new SuperstructureController(
                   new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
@@ -146,6 +152,16 @@ public class RobotContainer {
 
     if (rgb == null) {
       rgb = new RGB(new RGBIO() {});
+    }
+    if (rollers == null) {
+      if (intake == null) {
+        intake = new Intake(new IntakeIOTalonFX());
+      }
+      if (rollerSensors == null) {
+        rollerSensors = new RollerSensorsIOComp();
+      }
+
+      rollers = new Rollers(intake, rollerSensors);
     }
 
     nameCommands();
