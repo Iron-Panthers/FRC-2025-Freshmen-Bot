@@ -7,11 +7,12 @@ public class ElasticPID {
   SetSlot0Lambda lambda;
 
   GravityTypeValue gravityTypeValue;
-  
+
   String folderName;
 
   // Constructor should take in lambda for setSlot0 function
-  public ElasticPID(SetSlot0Lambda setSlot0Function, GravityTypeValue gravityTypeValue, String folderName) {
+  public ElasticPID(
+      SetSlot0Lambda setSlot0Function, GravityTypeValue gravityTypeValue, String folderName) {
     SmartDashboard.putNumber(folderName + "/kP", 0);
     SmartDashboard.putNumber(folderName + "/kI", 0);
     SmartDashboard.putNumber(folderName + "/kD", 0);
@@ -48,16 +49,16 @@ public class ElasticPID {
   // Interface for lambda
   public interface SetSlot0Lambda {
     public void setSlot0(
-      double kP,
-      double kI,
-      double kD,
-      double kS,
-      double kV,
-      double kA,
-      double kG,
-      double motionMagicAcceleration,
-      double motionMagicCruiseVelocity,
-      double motionMagicJerk,
-      GravityTypeValue gravityTypeValue);
-      }
+        double kP,
+        double kI,
+        double kD,
+        double kS,
+        double kV,
+        double kA,
+        double kG,
+        double motionMagicAcceleration,
+        double motionMagicCruiseVelocity,
+        double motionMagicJerk,
+        GravityTypeValue gravityTypeValue);
+  }
 }

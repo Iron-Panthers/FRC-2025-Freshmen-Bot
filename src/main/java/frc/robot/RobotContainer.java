@@ -31,7 +31,6 @@ import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
 import frc.robot.subsystems.rollers.Rollers;
-import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
 import frc.robot.subsystems.rollers.intake.IntakeIO;
 import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
@@ -53,6 +52,8 @@ import frc.robot.subsystems.swerve.ModuleIOTalonFXSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonvisionSim;
+import frc.robot.utility.ElasticSetpoints;
+
 import java.util.function.BooleanSupplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -69,6 +70,9 @@ public class RobotContainer {
 
   // private SendableChooser<Command> autoChooser;
   private LoggedDashboardChooser<Command> autoChooser;
+
+  /** To enable the elastic setpoints running in the background */
+  private ElasticSetpoints elasticSetpoints = ElasticSetpoints.getInstance();
 
   private final CommandXboxController driverA = new CommandXboxController(0);
   private final CommandXboxController driverB = new CommandXboxController(1);
@@ -215,11 +219,14 @@ public class RobotContainer {
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
     // Make rollers move
-    driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
-    driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
+    // driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
+    // driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
 
-    driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
-    driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L1));
+    // driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
+    // driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L1));
+    driverA.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.INTAKE));
+    driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.L1));
+    driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.L2));
   }
 
   private void configureAutos() {

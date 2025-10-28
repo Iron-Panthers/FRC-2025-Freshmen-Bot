@@ -30,12 +30,12 @@ public class Elevator extends GenericSuperstructure<Elevator.ElevatorTarget>
     private static final double EPSILON = ElevatorConstants.POSITION_TARGET_EPSILON;
 
     private ElevatorTarget(double position) {
-      ElasticSetpoints.getInstance().addSetpoint("ElevatorTarget/"+this.name(), position);
+      ElasticSetpoints.getInstance().addSetpoint("ElevatorTarget/" + this.name(), position);
       this.position = position;
     }
 
     public double getPosition() {
-      return ElasticSetpoints.getInstance().getSetpoint("ElevatorTarget/"+this.name(), position);
+      return ElasticSetpoints.getInstance().getSetpoint("ElevatorTarget/" + this.name(), position);
     }
 
     public double getEpsilon() {
