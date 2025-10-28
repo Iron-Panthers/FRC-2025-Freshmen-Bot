@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.lib.generic_subsystems.superstructure.*;
+import frc.robot.utility.ElasticSetpoints;
 import frc.robot.utility.LoggableMechanism3d;
 import org.littletonrobotics.junction.Logger;
 
@@ -29,11 +30,12 @@ public class Elevator extends GenericSuperstructure<Elevator.ElevatorTarget>
     private static final double EPSILON = ElevatorConstants.POSITION_TARGET_EPSILON;
 
     private ElevatorTarget(double position) {
+      ElasticSetpoints.getInstance().addSetpoint("ElevatorTarget/" + this.name(), position);
       this.position = position;
     }
 
     public double getPosition() {
-      return position;
+      return ElasticSetpoints.getInstance().getSetpoint("ElevatorTarget/" + this.name(), position);
     }
 
     public double getEpsilon() {
