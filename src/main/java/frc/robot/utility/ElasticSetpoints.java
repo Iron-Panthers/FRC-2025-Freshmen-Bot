@@ -61,7 +61,6 @@ public class ElasticSetpoints extends SubsystemBase{
     public void periodic() {
         // This method will be called once per scheduler run
         for (String key : setpoints.keySet()) {
-            System.out.println("Setpoint " + key + ": " + setpoints.get(key));
             // check if the setpoint exists in elastic
             if(!SmartDashboard.containsKey(key)){
                 SmartDashboard.putNumber(key, setpoints.get(key));
