@@ -16,7 +16,6 @@ public class SuperstructureController extends SubsystemBase {
     L4, // Scoring in L4
     L3, // Scoring in L3
     L2, // Scoring in L2
-    L1,
     TOP, // Apex
     ZERO, // Zero the motor
     INTAKE,
@@ -43,10 +42,6 @@ public class SuperstructureController extends SubsystemBase {
   public void periodic() {
     if (!stop) {
       switch (targetState) { // switch on the target state
-        case L1 -> {
-          pivot.setPositionTarget(PivotTarget.L1);
-          elevator.setPositionTarget(ElevatorTarget.L1);
-        }
         case L2 -> {
           pivot.setPositionTarget(PivotTarget.L2);
           elevator.setPositionTarget(ElevatorTarget.L2);

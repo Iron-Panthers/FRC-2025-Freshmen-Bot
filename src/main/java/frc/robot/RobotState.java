@@ -75,15 +75,14 @@ public class RobotState {
   @AutoLogOutput(key = "RobotState/Approach/LastBSide")
   private boolean lastApproachBSide = false;
 
-  @AutoLogOutput(key = "RobotState/Approach/LastL1")
-  private boolean lastL1 = false;
+
 
   private Pose2d lastApproachPose = new Pose2d();
 
   private ChassisSpeeds robotSpeeds = new ChassisSpeeds();
 
   private ApproachPose[] approachPoses =
-      generateApproachPoses(lastApproachOffset, lastApproachBSide, lastL1);
+      generateApproachPoses(lastApproachOffset, lastApproachBSide);
 
   private static RobotState instance;
 
@@ -211,7 +210,7 @@ public class RobotState {
   }
 
   // returns 6 approach poses, corresponding offset from reef wall & side, metres
-  private ApproachPose[] generateApproachPoses(double offset, boolean bSide, boolean l1) {
+  private ApproachPose[] generateApproachPoses(double offset, boolean bSide) {
     lastApproachBSide = bSide;
     lastApproachOffset = offset;
     Pose2d origin = new Pose2d(DriveConstants.BLUE_REEF_ORIGIN, Rotation2d.kZero);
@@ -223,7 +222,7 @@ public class RobotState {
       Rotation2d initialTheta = new Rotation2d(i * -Math.PI / 3);
       Pose2d directPose = offsetByVector(origin, (offset + 1.285), initialTheta);
 
-      Pose2d pose = translateByVector(directPose, l1 ? 0.42 : 0.165, horizontalOffset);
+      Pose2d pose = translateByVector(directPose, 0.165, horizontalOffset);
       poses.add(pose);
     }
     var poseArray = poses.toArray(new Pose2d[poses.size()]);
@@ -233,8 +232,8 @@ public class RobotState {
     return ApproachPose.fromPose2ds(poseArray);
   }
 
-  private ApproachPose findApproachPose(double offset, boolean bSide, boolean l1) {
-    approachPoses = generateApproachPoses(offset, bSide, l1);
+  private ApproachPose findApproachPose(double offset, boolean bSide) {
+    approachPoses = generateApproachPoses(offset, bSide);
 
     int closestIndex = 0;
     // absolutely not
@@ -259,9 +258,9 @@ public class RobotState {
     return approachPose;
   }
 
-  public Command approachReefCommand(double offset, boolean bSide, boolean l1) {
+  public Command approachReefCommand(double offset, boolean bSide) {
     Translation2d velocity = getVelocity();
-    ApproachPose approachPose = findApproachPose(offset, bSide, l1);
+    ApproachPose approachPose = findApproachPose(offset, bSide);
     Pose2d estimatedPose =
         DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red
             ? FlippingUtil.flipFieldPose(getEstimatedPose())
@@ -283,9 +282,7 @@ public class RobotState {
             new IdealStartingState(velocity.getNorm(), estimatedPose.getRotation()),
             new GoalEndState(
                 0.0,
-                l1
-                    ? approachPose.getPose().getRotation().minus(new Rotation2d(bSide ? -0.1 : 0.1))
-                    : approachPose.getPose().getRotation()));
+                approachPose.getPose().getRotation()));
     return AutoBuilder.followPath(path);
   }
 
