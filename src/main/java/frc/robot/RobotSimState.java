@@ -9,6 +9,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.Constants.RobotType;
 import frc.robot.subsystems.swerve.DriveConstants;
+import java.util.function.Supplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
@@ -25,6 +26,8 @@ public class RobotSimState {
   // Intake sim variables
   @AutoLogOutput(key = "RobotSimState/Intake Has Coral")
   private boolean intakeHasCoral;
+
+  Supplier<Pose3d> currentCoralEjectionPoseSupplier = () -> new Pose3d();
 
   @AutoLogOutput(key = "RobotSimState/Distance From Coral Ejection")
   private Distance distanceFromEject;
@@ -46,17 +49,16 @@ public class RobotSimState {
       // spawn in the coral
       if (Constants.getRobotType() == RobotType.SIM) {
 
-        Pose3d currentCoralEjectionPose = new Pose3d(); // FIXME: make this a real pose3d
         SimulatedArena.getInstance()
             .addGamePieceProjectile(
                 new ReefscapeCoralOnFly(
                     driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-                    currentCoralEjectionPose.toPose2d().getTranslation(),
+                    currentCoralEjectionPoseSupplier.get().toPose2d().getTranslation(),
                     driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
                     driveSimulation.getSimulatedDriveTrainPose().getRotation(),
-                    Units.Meters.of(currentCoralEjectionPose.getZ()),
+                    Units.Meters.of(currentCoralEjectionPoseSupplier.get().getZ()),
                     updateVelocity,
-                    currentCoralEjectionPose.getRotation().getMeasureY()));
+                    currentCoralEjectionPoseSupplier.get().getRotation().getMeasureY()));
       }
     }
   }
@@ -79,6 +81,10 @@ public class RobotSimState {
       instance = new RobotSimState();
     }
     return instance;
+  }
+
+  public void setEjectPositionSupplier(Supplier<Pose3d> supplier) {
+    currentCoralEjectionPoseSupplier = supplier;
   }
 
   public RobotSimState() {

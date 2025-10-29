@@ -31,16 +31,23 @@ import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
 import frc.robot.subsystems.rollers.Rollers;
+import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
 import frc.robot.subsystems.rollers.intake.IntakeIO;
+import frc.robot.subsystems.rollers.intake.IntakeIOSim;
 import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
 import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.superstructure.pivot.Pivot;
+import frc.robot.subsystems.superstructure.pivot.PivotConstants;
+import frc.robot.subsystems.superstructure.pivot.PivotIO;
 import frc.robot.subsystems.superstructure.pivot.PivotIOSim;
+import frc.robot.subsystems.superstructure.pivot.PivotIOTalonFX;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.DriveConstants;
 import frc.robot.subsystems.swerve.GyroIO;
@@ -67,6 +74,10 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
 
+  // DO NOT DELETE - IF YOU DELETE, YOU WILL BE DELETED.
+  private RobotState robotState = RobotState.getInstance();
+  private RobotSimState robotSimState = RobotSimState.getInstance();
+
   // private SendableChooser<Command> autoChooser;
   private LoggedDashboardChooser<Command> autoChooser;
 
@@ -84,6 +95,7 @@ public class RobotContainer {
   private SuperstructureController superstructureController;
   private ClimbController climbController;
   private Climb climb;
+  private Pivot pivot;
   private Rollers rollers;
   private RollerSensorsIOComp rollerSensors;
   private Intake intake;
@@ -107,6 +119,8 @@ public class RobotContainer {
           intake = new Intake(new IntakeIOTalonFX());
           rollerSensors = new RollerSensorsIOComp();
           climb = new Climb(new ClimbIOTalonFX());
+          pivot = new Pivot(new PivotIOTalonFX());
+          elevator = new Elevator(new ElevatorIOTalonFX());
         }
         case SIM -> {
           SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
@@ -126,10 +140,9 @@ public class RobotContainer {
               new Vision(
                   new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
                   new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
-          superstructureController =
-              new SuperstructureController(
-                  new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
-
+          pivot = new Pivot(new PivotIOSim());
+          elevator = new Elevator(new ElevatorIOSim());
+          intake = new Intake(new IntakeIOSim());
           climb = new Climb(new ClimbIOSim());
           SimulatedArena.getInstance().resetFieldForAuto();
         }
@@ -170,9 +183,23 @@ public class RobotContainer {
     }
     climbController = new ClimbController(climb);
 
+    if (pivot == null) {
+      pivot = new Pivot(new PivotIO() {});
+    }
+    if (elevator == null) {
+      elevator = new Elevator(new ElevatorIO() {});
+    }
+
+    superstructureController = new SuperstructureController(elevator, pivot);
+    RobotSimState.getInstance()
+        .setEjectPositionSupplier(
+            () -> pivot.getDisplayPose3d().plus(PivotConstants.PIVOT_TO_OUTTAKE_TRANSFORM));
+
     nameCommands();
     configureAutos();
     configureBindings();
+    robotSimState.setEjectPositionSupplier(
+        () -> pivot.getDisplayPose3d().plus(PivotConstants.PIVOT_TO_OUTTAKE_TRANSFORM));
   }
 
   public void containerMatchStarting() {
@@ -221,10 +248,10 @@ public class RobotContainer {
     // driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
     // driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
 
-    // driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
-    // driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L1));
+    driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
+    driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L2));
     driverA.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.INTAKE));
-    driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.L2));
+    // driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.L2));
   }
 
   private void configureAutos() {
