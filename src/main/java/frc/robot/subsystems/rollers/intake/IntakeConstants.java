@@ -15,6 +15,7 @@ public class IntakeConstants {
         case SIM -> 40;
         default -> 40;
       };
+  // TODO: change to InvertedValue
   public static final boolean INVERTED =
       switch (Constants.getRobotType()) {
         case COMP -> false;
@@ -29,6 +30,12 @@ public class IntakeConstants {
       switch (Constants.getRobotType()) {
         case COMP -> 2.25;
         case SIM -> 2.25;
+        default -> 1;
+      };
+  // TODO: Change default to bot being used in Comp
+  public static final double ROLLER_CIRCUMFERENCE =
+      switch (Constants.getRobotType()) {
+        case COMP, SIM -> 0.16022122533;
         default -> 1;
       };
 

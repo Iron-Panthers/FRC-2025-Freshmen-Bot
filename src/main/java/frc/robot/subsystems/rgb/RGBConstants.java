@@ -43,7 +43,6 @@ public class RGBConstants {
       E_L2,
       F_L3,
       G_L4,
-      H_L1,
       I_CORAL_DETECTED,
       J_DEFAULT
     }

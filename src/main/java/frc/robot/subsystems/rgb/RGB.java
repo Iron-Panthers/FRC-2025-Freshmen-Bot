@@ -23,7 +23,6 @@ public class RGB extends SubsystemBase {
     L2(new RGBMessage(Colors.ORANGE, RGBPattern.STROBE, MessagePriority.E_L2, true)),
     L3(new RGBMessage(Colors.YELLOW, RGBPattern.STROBE, MessagePriority.F_L3, true)),
     L4(new RGBMessage(Colors.BLUE, RGBPattern.STROBE, MessagePriority.G_L4, true)),
-    L1(new RGBMessage(Colors.RED, RGBPattern.STROBE, MessagePriority.H_L1, true)),
     CORAL_DETECTED(
         new RGBMessage(Colors.GREEN, RGBPattern.PULSE, MessagePriority.I_CORAL_DETECTED, true)),
     DEFAULT(new RGBMessage(Colors.WHITE, RGBPattern.RAINBOW, MessagePriority.J_DEFAULT, false));
@@ -63,8 +62,7 @@ public class RGB extends SubsystemBase {
     if (currentMessage.isPresent()) {
       if (RGBMessages.CORAL_DETECTED.rgbMessage.getIsExpired()
           // if one of the level messages
-          && (currentMessage.get().equals(RGBMessages.L1.rgbMessage)
-              || currentMessage.get().equals(RGBMessages.L2.rgbMessage)
+          && (currentMessage.get().equals(RGBMessages.L2.rgbMessage)
               || currentMessage.get().equals(RGBMessages.L3.rgbMessage)
               || currentMessage.get().equals(RGBMessages.L4.rgbMessage))) {
         currentMessage = Optional.of(RGBMessages.DEFAULT.rgbMessage);
@@ -92,7 +90,6 @@ public class RGB extends SubsystemBase {
   public Command clearLevelCommands() {
     return new InstantCommand(
         () -> {
-          RGBMessages.L1.setIsExpired(true);
           RGBMessages.L2.setIsExpired(true);
           RGBMessages.L3.setIsExpired(true);
           RGBMessages.L4.setIsExpired(true);

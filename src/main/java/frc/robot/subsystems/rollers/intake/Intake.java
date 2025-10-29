@@ -8,8 +8,8 @@ public class Intake extends GenericRollers<Intake.Target> {
     INTAKE(4),
     HOLD(0),
     EJECT_TOP(-8),
+    // TODO: Add eject L4
     EJECT_L3(2),
-    EJECT_L1(2),
     EJECT_L2(2.4);
 
     private double volts;

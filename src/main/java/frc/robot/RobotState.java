@@ -70,15 +70,12 @@ public class RobotState {
   @AutoLogOutput(key = "RobotState/Approach/LastBSide")
   private boolean lastApproachBSide = false;
 
-  @AutoLogOutput(key = "RobotState/Approach/LastL1")
-  private double lastL1Offset = 0;
-
   private Pose2d lastApproachPose = new Pose2d();
 
   private ChassisSpeeds robotSpeeds = new ChassisSpeeds();
 
   private ApproachPose[] approachPoses =
-      generateApproachPoses(lastApproachOffset, lastApproachBSide, lastL1Offset);
+      generateApproachPoses(lastApproachOffset, lastApproachBSide);
 
   private static RobotState instance;
 
@@ -206,7 +203,7 @@ public class RobotState {
   }
 
   // returns 6 approach poses, corresponding offset from reef wall & side, metres
-  private ApproachPose[] generateApproachPoses(double offset, boolean bSide, double l1Offset) {
+  private ApproachPose[] generateApproachPoses(double offset, boolean bSide) {
     lastApproachBSide = bSide;
     lastApproachOffset = offset;
     Pose2d origin = new Pose2d(DriveConstants.BLUE_REEF_ORIGIN, Rotation2d.kZero);
@@ -218,7 +215,7 @@ public class RobotState {
       Rotation2d initialTheta = new Rotation2d(i * -Math.PI / 3);
       Pose2d directPose = offsetByVector(origin, (offset + 1.285), initialTheta);
 
-      Pose2d pose = translateByVector(directPose, l1Offset + 0.165, horizontalOffset);
+      Pose2d pose = translateByVector(directPose, 0.165, horizontalOffset);
       poses.add(pose);
     }
     var poseArray = poses.toArray(new Pose2d[poses.size()]);
@@ -228,9 +225,9 @@ public class RobotState {
     return ApproachPose.fromPose2ds(poseArray);
   }
 
-  private ApproachPose findApproachPose(double offset, boolean bSide, double l1Offset) {
-    approachPoses = generateApproachPoses(offset, bSide, l1Offset);
-    Pose2d origin = new Pose2d(DriveConstants.BLUE_REEF_ORIGIN, Rotation2d.kZero);
+  private ApproachPose findApproachPose(double offset, boolean bSide) {
+    approachPoses = generateApproachPoses(offset, bSide);
+
     int closestIndex = 0;
     double closestDistance = 1000;
     for (int i = closestIndex; i < approachPoses.length; i++) {
