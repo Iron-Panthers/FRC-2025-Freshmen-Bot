@@ -180,8 +180,8 @@ public class RobotContainer {
 
     driverA.x().whileTrue(swerve.setTargetPositionCommand(new Pose2d(8.6, 6, new Rotation2d(20))));
 
-    driverA.b().whileTrue(swerve.setTargetApproachReef(.2, true, true));
-    driverA.y().whileTrue(swerve.setTargetApproachReef(.2, false, true));
+    driverA.b().whileTrue(swerve.setTargetApproachReef(.2, true, .1));
+    driverA.y().whileTrue(swerve.setTargetApproachReef(.2, false, .1));
   }
 
   private void configureAutos() {

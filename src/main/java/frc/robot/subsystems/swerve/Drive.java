@@ -219,12 +219,15 @@ public class Drive extends SubsystemBase {
     driveMode = DriveModes.AUTO_ALIGN;
     if (pidAutoAlignController == null) {
       pidAutoAlignController =
-          new PIDAutoAlignController(() -> currentPosition, () -> arbitraryYaw, targetPosition);
+          new PIDAutoAlignController(
+              () -> RobotState.getInstance().getEstimatedPose(),
+              () -> gyroInputs.yawPosition,
+              targetPosition);
     } else {
       pidAutoAlignController.setTargetPosition(targetPosition);
     }
 
-    setTargetHeading(targetPosition.getRotation().plus(new Rotation2d(Math.PI)));
+    setTargetHeading(targetPosition.getRotation());
 
     return targetPosition;
   }
@@ -242,9 +245,9 @@ public class Drive extends SubsystemBase {
         this);
   }
 
-  public Command setTargetApproachReef(double offset, boolean bside, boolean l1) {
+  public Command setTargetApproachReef(double offset, boolean bside, double l1Offset) {
     return new FunctionalCommand(
-        () -> setTargetPosition(RobotState.getInstance().getApproachPose(offset, bside, l1)),
+        () -> setTargetPosition(RobotState.getInstance().getApproachPose(offset, bside, l1Offset)),
         () -> {},
         (t) -> clearTargetPositionController(),
         () -> false,
