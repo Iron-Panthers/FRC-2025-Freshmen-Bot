@@ -2,6 +2,7 @@ package frc.robot.lib.generic_subsystems.superstructure;
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -24,6 +25,10 @@ public abstract class GenericSuperstructureIOSim implements GenericSuperstructur
 
     talon = new TalonFX(id);
     talon.setNeutralMode(NeutralModeValue.Brake);
+    TalonFXConfiguration configs = new TalonFXConfiguration();
+    configs.CurrentLimits.SupplyCurrentLimitEnable = false;
+    configs.CurrentLimits.StatorCurrentLimitEnable = false;
+    talon.getConfigurator().apply(configs);
   }
 
   @Override

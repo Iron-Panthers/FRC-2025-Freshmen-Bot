@@ -16,10 +16,10 @@ public class SuperstructureController extends SubsystemBase {
     L4, // Scoring in L4
     L3, // Scoring in L3
     L2, // Scoring in L2
-    L1,
     TOP, // Apex
     ZERO, // Zero the motor
-    INTAKE;
+    INTAKE,
+    CLIMB;
   }
 
   private boolean stop = false;
@@ -42,10 +42,6 @@ public class SuperstructureController extends SubsystemBase {
   public void periodic() {
     if (!stop) {
       switch (targetState) { // switch on the target state
-        case L1 -> {
-          pivot.setPositionTarget(PivotTarget.L1);
-          elevator.setPositionTarget(ElevatorTarget.L1);
-        }
         case L2 -> {
           pivot.setPositionTarget(PivotTarget.L2);
           elevator.setPositionTarget(ElevatorTarget.L2);
@@ -65,6 +61,10 @@ public class SuperstructureController extends SubsystemBase {
         case INTAKE -> {
           pivot.setPositionTarget(PivotTarget.INTAKE);
           elevator.setPositionTarget(ElevatorTarget.INTAKE);
+        }
+        case CLIMB -> {
+          pivot.setPositionTarget(PivotTarget.CLIMB);
+          elevator.setPositionTarget(ElevatorTarget.CLIMB);
         }
         case ZERO -> {
           pivot.setPositionTarget(PivotTarget.ZERO);
@@ -128,7 +128,8 @@ public class SuperstructureController extends SubsystemBase {
           setTargetState(superstructureState);
         },
         () -> {},
-        (e) -> {},
+        // Input not used
+        (interrupted) -> {},
         () -> {
           return superstructureReachedTarget();
         },

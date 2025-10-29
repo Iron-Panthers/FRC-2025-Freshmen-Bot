@@ -5,33 +5,31 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.lib.generic_subsystems.superstructure.*;
+import frc.robot.utility.ElasticSetpoints;
 import frc.robot.utility.LoggableMechanism3d;
 import org.littletonrobotics.junction.Logger;
 
 public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements LoggableMechanism3d {
   public enum PivotTarget implements GenericSuperstructure.PositionTarget {
-    TOP(-79),
-    INTAKE(-96),
-    STOW(-96),
-    L1(-110),
-    L2(223),
-    L3(185),
-    // CLIMB(-115),
-    L4(-165),
-    ZERO(0),
-
-    // for the algae on L2
-    DESCORE_LOW(-15);
+    TOP(90),
+    INTAKE(250),
+    STOW(200),
+    L2(40),
+    L3(55),
+    CLIMB(200),
+    L4(40),
+    ZERO(0);
 
     private double position;
     private static final double EPSILON = PivotConstants.POSITION_TARGET_EPSILON;
 
     private PivotTarget(double position) {
+      ElasticSetpoints.getInstance().addSetpoint("PivotTarget/" + this.name(), position);
       this.position = position;
     }
 
     public double getPosition() {
-      return position;
+      return ElasticSetpoints.getInstance().getSetpoint("PivotTarget/" + this.name(), position);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package frc.robot.subsystems.superstructure.pivot;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.lib.generic_subsystems.superstructure.*;
 

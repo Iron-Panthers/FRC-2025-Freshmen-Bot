@@ -31,7 +31,7 @@ public class RobotSimState {
 
   public void coralIntaked() {
     intakeHasCoral = true;
-    distanceFromEject = Meters.of(.5); // FIXME: change to const val
+    distanceFromEject = Meters.of(-.5); // FIXME: change to const val
   }
 
   public void updateCoralPosition(LinearVelocity updateVelocity) {
@@ -41,7 +41,7 @@ public class RobotSimState {
         distanceFromEject.minus(
             updateVelocity.times(Time.ofBaseUnits(0.02, Second))); // update the distance
 
-    if (distanceFromEject.magnitude() <= 0) { // if no more distance to go
+    if (distanceFromEject.compareTo(Meters.of(0)) <= 0) { // if no more distance to go
       intakeHasCoral = false;
       // spawn in the coral
       if (Constants.getRobotType() == RobotType.SIM) {
@@ -72,8 +72,8 @@ public class RobotSimState {
   private static RobotSimState instance;
 
   public static RobotSimState getInstance() {
-    if (Constants.getRobotType() != RobotType.SIM) { // FIXME: I don't like it
-      return null;
+    if (Constants.getRobotType() != RobotType.SIM) {
+      System.err.println("ROBOT SHOULD NOT ACCESS SIM STATE IN NORMAL MODE");
     }
     if (instance == null) {
       instance = new RobotSimState();

@@ -23,13 +23,18 @@ import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
 import frc.robot.subsystems.climb.Climb;
-import frc.robot.subsystems.climb.Climb.ClimbTarget;
 import frc.robot.subsystems.climb.ClimbController;
+import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
+import frc.robot.subsystems.rollers.Rollers;
+import frc.robot.subsystems.rollers.intake.Intake;
+import frc.robot.subsystems.rollers.intake.IntakeIO;
+import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
+import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
 import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
@@ -47,8 +52,10 @@ import frc.robot.subsystems.swerve.ModuleIOTalonFXSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonvisionSim;
+import frc.robot.utility.ElasticSetpoints;
 import java.util.function.BooleanSupplier;
 import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -63,16 +70,23 @@ public class RobotContainer {
   // private SendableChooser<Command> autoChooser;
   private LoggedDashboardChooser<Command> autoChooser;
 
+  /** To enable the elastic setpoints running in the background */
+  private ElasticSetpoints elasticSetpoints = ElasticSetpoints.getInstance();
+
   private final CommandXboxController driverA = new CommandXboxController(0);
   private final CommandXboxController driverB = new CommandXboxController(1);
 
+  private boolean autoAngle = true;
   private Drive swerve;
   private Vision vision;
   private RGB rgb;
   private CANWatchdog canWatchdog;
   private SuperstructureController superstructureController;
   private ClimbController climbController;
-  private SwerveDriveSimulation driveSimulation = null;
+  private Climb climb;
+  private Rollers rollers;
+  private RollerSensorsIOComp rollerSensors;
+  private Intake intake;
   private Elevator elevator;
 
   public RobotContainer() {
@@ -92,27 +106,22 @@ public class RobotContainer {
           canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
           intake = new Intake(new IntakeIOTalonFX());
           rollerSensors = new RollerSensorsIOComp();
-          climbController = new ClimbController(new Climb(new ClimbIOTalonFX()));
+          climb = new Climb(new ClimbIOTalonFX());
         }
         case SIM -> {
-          SimulatedArena.getInstance()
-              .addDriveTrainSimulation(RobotSimState.getInstance().getDriveSimulation());
+          SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
+          SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
           swerve =
               new Drive(
-                  new GyroIOSim(
-                      RobotSimState.getInstance().getDriveSimulation().getGyroSimulation()),
+                  new GyroIOSim(driveSimulation.getGyroSimulation()),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[0],
-                      RobotSimState.getInstance().getDriveSimulation().getModules()[0]),
+                      DriveConstants.MODULE_CONFIGS[0], driveSimulation.getModules()[0]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[1],
-                      RobotSimState.getInstance().getDriveSimulation().getModules()[1]),
+                      DriveConstants.MODULE_CONFIGS[1], driveSimulation.getModules()[1]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[2],
-                      RobotSimState.getInstance().getDriveSimulation().getModules()[2]),
+                      DriveConstants.MODULE_CONFIGS[2], driveSimulation.getModules()[2]),
                   new ModuleIOTalonFXSim(
-                      DriveConstants.MODULE_CONFIGS[3],
-                      RobotSimState.getInstance().getDriveSimulation().getModules()[3]));
+                      DriveConstants.MODULE_CONFIGS[3], driveSimulation.getModules()[3]));
           vision =
               new Vision(
                   new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
@@ -121,7 +130,7 @@ public class RobotContainer {
               new SuperstructureController(
                   new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
 
-          climbController = new ClimbController(new Climb(new ClimbIOSim()));
+          climb = new Climb(new ClimbIOSim());
           SimulatedArena.getInstance().resetFieldForAuto();
         }
       }
@@ -147,6 +156,19 @@ public class RobotContainer {
     if (rgb == null) {
       rgb = new RGB(new RGBIO() {});
     }
+
+    if (intake == null) {
+      intake = new Intake(new IntakeIO() {});
+    }
+    if (rollerSensors == null) {
+      rollerSensors = new RollerSensorsIOComp() {};
+    }
+    rollers = new Rollers(intake, rollerSensors);
+
+    if (climb == null) {
+      climb = new Climb(new ClimbIO() {});
+    }
+    climbController = new ClimbController(climb);
 
     nameCommands();
     configureAutos();
@@ -184,7 +206,7 @@ public class RobotContainer {
 
                     // In SIM-2025, the "true" is a variable called autoAngle that is never changed
                     // from true. I'm not sure what to do with this exactly...
-                  } else if (true) {
+                  } else if (autoAngle) {
 
                     determineSwerveTarget();
                   }
@@ -196,11 +218,13 @@ public class RobotContainer {
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
     // Make rollers move
-    driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
-    driverA.y().onTrue(rollers.setTargetCommand(RollerState.HOLD));
+    // driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
+    // driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
 
-    driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
-    driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L1));
+    // driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
+    // driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L1));
+    driverA.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.INTAKE));
+    driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.L2));
   }
 
   private void configureAutos() {
@@ -273,8 +297,6 @@ public class RobotContainer {
     SmartDashboard.putString("Current Auto", autoChooser.get().getName());
   }
 
-  // #region Helper functions May wrote or copied from elsewhere cuz she's a little plagarizer >:(
-
   /**
    * Wraps around the value of a double to 0 - 360.
    *
@@ -308,6 +330,7 @@ public class RobotContainer {
 
     targetHeading = targetHeading.rotateBy(Rotation2d.kPi); // because back of robot
 
+    // TODO: Maybe make this *** mathematica ***
     double closest = DriveConstants.REEF_SNAP_ANGLES[0];
     for (double snap : DriveConstants.REEF_SNAP_ANGLES) {
 
@@ -331,11 +354,11 @@ public class RobotContainer {
         DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == Alliance.Red;
 
-    // Snap towards right corner when close
+    // Snap towards right station when close
     if (robotPosition.getDistance(DriveConstants.RIGHT_CORNER) < 3) {
       swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)));
 
-      // Snap towards left corner when close
+      // Snap towards left station when close
     } else if (robotPosition.getDistance(DriveConstants.LEFT_CORNER) < 3) {
       swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)));
 
@@ -350,8 +373,7 @@ public class RobotContainer {
       // Snap towards climb zone when close and in climb phase
     } else if (MathUtil.isNear(DriveConstants.CLIMB_ZONE_CENTER.getX(), robotPosition.getX(), 2)
         && MathUtil.isNear(DriveConstants.CLIMB_ZONE_CENTER.getY(), robotPosition.getY(), 2)
-    /* && superstructure.getTargetState() == SuperstructureState.CLIMB */
-    /* TO-DO: Once the state system is implemented, uncomment this line! */ ) {
+        && superstructureController.getTargetState() == SuperstructureState.CLIMB) {
       swerve.setTargetHeading(new Rotation2d(Math.PI / 2));
 
       // If none of the previous conditions match, snap towards reef
@@ -360,7 +382,6 @@ public class RobotContainer {
           robotAngleToReef.minus(isTeamRed ? Rotation2d.kPi : Rotation2d.kZero));
     }
   }
-  // #endregion
 
   public void updateSimulation() {
     if (Constants.getRobotMode() != Constants.Mode.SIM) return;
