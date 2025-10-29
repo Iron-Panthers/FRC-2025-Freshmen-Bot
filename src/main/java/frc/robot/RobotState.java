@@ -75,8 +75,6 @@ public class RobotState {
   @AutoLogOutput(key = "RobotState/Approach/LastBSide")
   private boolean lastApproachBSide = false;
 
-
-
   private Pose2d lastApproachPose = new Pose2d();
 
   private ChassisSpeeds robotSpeeds = new ChassisSpeeds();
@@ -280,9 +278,7 @@ public class RobotState {
             waypoints,
             DriveConstants.ALIGN_PATH_CONSTRAINTS,
             new IdealStartingState(velocity.getNorm(), estimatedPose.getRotation()),
-            new GoalEndState(
-                0.0,
-                approachPose.getPose().getRotation()));
+            new GoalEndState(0.0, approachPose.getPose().getRotation()));
     return AutoBuilder.followPath(path);
   }
 

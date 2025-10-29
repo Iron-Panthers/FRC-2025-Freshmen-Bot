@@ -53,7 +53,6 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonvisionSim;
 import frc.robot.utility.ElasticSetpoints;
-
 import java.util.function.BooleanSupplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -225,7 +224,6 @@ public class RobotContainer {
     // driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
     // driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L1));
     driverA.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.INTAKE));
-    driverA.y().onTrue(superstructureController.goToStateCommand(SuperstructureState.L1));
     driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.L2));
   }
 
