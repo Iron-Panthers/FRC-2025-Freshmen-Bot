@@ -227,7 +227,7 @@ public class RobotState {
 
   private ApproachPose findApproachPose(double offset, boolean bSide) {
     approachPoses = generateApproachPoses(offset, bSide);
-
+    Pose2d origin = new Pose2d(DriveConstants.BLUE_REEF_ORIGIN, Rotation2d.kZero);
     int closestIndex = 0;
     double closestDistance = 1000;
     for (int i = closestIndex; i < approachPoses.length; i++) {
@@ -276,7 +276,7 @@ public class RobotState {
     return lastApproachPose;
   }
 
-  public Pose2d getApproachPose(double offset, boolean bside, double l1Offset) {
-    return findApproachPose(offset, bside, l1Offset).getAlliancePose();
+  public Pose2d getApproachPose(double offset, boolean bside) {
+    return findApproachPose(offset, bside).getAlliancePose();
   }
 }

@@ -6,9 +6,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -214,14 +214,12 @@ public class RobotContainer {
                 })
             .withName("Drive Teleop"));
 
-    driverA.start().onTrue(swerve.zeroGyroCommand());
+    // driverA.start().onTrue(swerve.zeroGyroCommand());
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
-    driverA.x().whileTrue(swerve.setTargetPositionCommand(new Pose2d(8.6, 6, new Rotation2d(20))));
-
-    driverA.b().whileTrue(swerve.setTargetApproachReef(.2, true, .1));
-    driverA.y().whileTrue(swerve.setTargetApproachReef(.2, false, .1));
+    driverA.b().whileTrue(swerve.setTargetApproachReef(.2, true));
+    driverA.y().whileTrue(swerve.setTargetApproachReef(.2, false));
   }
 
   private void configureAutos() {
