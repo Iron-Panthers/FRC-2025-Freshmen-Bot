@@ -127,15 +127,15 @@ public class DriveConstants {
             new Gains(0.25, 2.26, 0, 50, 0, 0),
             new MotionProfileGains(4, 64, 640),
             new Gains(0.16, 0.67, 0, 1.5, 0, 0),
-            (45.0 / 15) * (17.0 / 27) * (50.0 / 16), // MK4i L2.5 16 tooth
-            150.0 / 7,
+            (30.0 / 15) * (25.0 / 32) * (54.0 / 14), // Mk5n L2.5 16 tooth
+            287.0 / 11,
             3.125);
         case SIM -> new ModuleConstants(
             new Gains(0.25, 2.26, 0, 70, 0, 0),
             new MotionProfileGains(4, 64, 640),
             new Gains(0.16, 0.67, 0, 1.5, 0, 0),
-            (45.0 / 15) * (17.0 / 27) * (50.0 / 16), // MK4i L2.5 16 tooth
-            150.0 / 7,
+            (30.0 / 15) * (25.0 / 32) * (54.0 / 14), // MK5n R2 ratio
+            287.0 / 11,
             3.125);
       };
   public static final DriveTrainSimulationConfig mapleSimConfig =
@@ -168,6 +168,14 @@ public class DriveConstants {
         case COMP -> new HeadingControllerConstants(6, 0, 5, 200, 0.002);
         case SIM -> new HeadingControllerConstants(6, 0, 5, 200, 0.002);
         default -> new HeadingControllerConstants(0, 0, 0, 0, 0);
+      };
+
+  public static final PIDAutoAlignControllerConstants PID_AUTOALIGN_CONSTANTS =
+      switch (getRobotType()) {
+        case COMP -> new PIDAutoAlignControllerConstants(
+            0, 0, 0, 0, 0); /*FIXME: tune these constants*/
+        case SIM -> new PIDAutoAlignControllerConstants(3.2, 0, 0, 4, 1);
+        default -> new PIDAutoAlignControllerConstants(0, 0, 0, 0, 0);
       };
 
   public static final double[] REEF_SNAP_ANGLES = {-120, -60, 0, 60, 120, 180};
@@ -249,6 +257,9 @@ public class DriveConstants {
   public record HeadingControllerConstants(
       double kP, double kD, double maxVelocity, double maxAcceleration, double tolerance) {}
 
+  public record PIDAutoAlignControllerConstants(
+      double kP, double kI, double kD, double maxVelocity, double maxAcceleration) {}
+
   public record ApproachPose(Pose2d pose) {
     public static ApproachPose[] fromPose2ds(Pose2d... poses) {
       List<ApproachPose> approachPoses = new ArrayList<ApproachPose>();
@@ -259,8 +270,10 @@ public class DriveConstants {
     }
 
     public Pose2d getAlliancePose() {
-      return DriverStation.getAlliance().get() == Alliance.Red
-          ? FlippingUtil.flipFieldPose(pose)
+      return DriverStation.getAlliance().isPresent()
+          ? (DriverStation.getAlliance().get() == Alliance.Red
+              ? FlippingUtil.flipFieldPose(pose)
+              : pose)
           : pose;
     }
 
