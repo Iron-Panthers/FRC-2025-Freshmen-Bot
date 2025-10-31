@@ -68,6 +68,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
 
+  // DO NOT DELETE - IF YOU DELETE, YOU WILL BE DELETED.
+  private RobotState robotState = RobotState.getInstance();
+  
   // private SendableChooser<Command> autoChooser;
   private LoggedDashboardChooser<Command> autoChooser;
 
