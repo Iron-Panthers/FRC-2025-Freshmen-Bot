@@ -6,6 +6,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -240,18 +241,12 @@ public class RobotContainer {
                 })
             .withName("Drive Teleop"));
 
-    driverA.start().onTrue(swerve.zeroGyroCommand());
+    // driverA.start().onTrue(swerve.zeroGyroCommand());
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
-    // Make rollers move
-    // driverA.x().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
-    // driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
-
-    driverA.b().onTrue(new InstantCommand(() -> RobotSimState.getInstance().coralIntaked()));
-    driverA.a().onTrue(rollers.setTargetCommand(RollerState.EJECT_L2));
-    driverA.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.INTAKE));
-    // driverA.b().onTrue(superstructureController.goToStateCommand(SuperstructureState.L2));
+    driverA.b().whileTrue(swerve.setTargetApproachReef(.2, true));
+    driverA.y().whileTrue(swerve.setTargetApproachReef(.2, false));
   }
 
   private void configureAutos() {

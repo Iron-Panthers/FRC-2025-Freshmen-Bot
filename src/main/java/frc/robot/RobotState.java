@@ -4,11 +4,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.IdealStartingState;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -26,7 +21,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.swerve.DriveConstants;
 import frc.robot.subsystems.swerve.DriveConstants.ApproachPose;
 import java.util.ArrayList;
@@ -36,6 +30,7 @@ import org.littletonrobotics.junction.Logger;
 
 /* based on wpimath/../PoseEstimator.java */
 public class RobotState {
+
   public static final double fieldSizeX = Units.feetToMeters(57.573);
   public static final double fieldSizeY = Units.feetToMeters(26.417);
 
@@ -232,17 +227,21 @@ public class RobotState {
 
   private ApproachPose findApproachPose(double offset, boolean bSide) {
     approachPoses = generateApproachPoses(offset, bSide);
-
+    Pose2d origin = new Pose2d(DriveConstants.BLUE_REEF_ORIGIN, Rotation2d.kZero);
     int closestIndex = 0;
-    // absolutely not
-    for (int i = closestIndex; i < approachPoses.length; ++i) {
-      if (getEstimatedPose()
+    double closestDistance = 1000;
+    for (int i = closestIndex; i < approachPoses.length; i++) {
+      double angle = -Math.PI / 3 * i;
+      double x = (offset + 1.285) * Math.cos(angle) + origin.getX();
+      double y = (offset + 1.285) * Math.sin(angle) + origin.getY();
+      ApproachPose reefPose = new ApproachPose(new Pose2d(x, y, new Rotation2d()));
+      double newDistance =
+          getEstimatedPose()
               .getTranslation()
-              .getDistance(approachPoses[i].getAlliancePose().getTranslation())
-          < getEstimatedPose()
-              .getTranslation()
-              .getDistance(approachPoses[closestIndex].getAlliancePose().getTranslation())) {
+              .getDistance(reefPose.getAlliancePose().getTranslation());
+      if (closestDistance > newDistance) {
         closestIndex = i;
+        closestDistance = newDistance;
       }
     }
 
@@ -254,32 +253,6 @@ public class RobotState {
     lastApproachPose = approachPose.getAlliancePose();
 
     return approachPose;
-  }
-
-  public Command approachReefCommand(double offset, boolean bSide) {
-    Translation2d velocity = getVelocity();
-    ApproachPose approachPose = findApproachPose(offset, bSide);
-    Pose2d estimatedPose =
-        DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red
-            ? FlippingUtil.flipFieldPose(getEstimatedPose())
-            : getEstimatedPose();
-    Rotation2d angle =
-        approachPose.getPose().getTranslation().minus(estimatedPose.getTranslation()).getAngle();
-    List<Waypoint> waypoints =
-        PathPlannerPath.waypointsFromPoses(
-            new Pose2d(
-                estimatedPose.getTranslation(),
-                // velocity.getNorm() > 0.4 ? velocity.getAngle() : angle),
-                angle),
-            new Pose2d(approachPose.getPose().getTranslation(), angle));
-
-    PathPlannerPath path =
-        new PathPlannerPath(
-            waypoints,
-            DriveConstants.ALIGN_PATH_CONSTRAINTS,
-            new IdealStartingState(velocity.getNorm(), estimatedPose.getRotation()),
-            new GoalEndState(0.0, approachPose.getPose().getRotation()));
-    return AutoBuilder.followPath(path);
   }
 
   private Pose2d translateByVector(Pose2d pose, double mag, Rotation2d theta) {
@@ -301,5 +274,9 @@ public class RobotState {
 
   public Pose2d getAlignPose() {
     return lastApproachPose;
+  }
+
+  public Pose2d getApproachPose(double offset, boolean bside) {
+    return findApproachPose(offset, bside).getAlliancePose();
   }
 }

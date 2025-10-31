@@ -72,6 +72,7 @@ public class TeleopController {
         yawSupplier.get());
   }
 
+  // all the math
   public Translation2d calculateLinearVelocity(double x, double y) {
 
     Rotation2d theta;
@@ -91,7 +92,7 @@ public class TeleopController {
   }
 
   @AutoLogOutput(key = "Swerve/Acceleration")
-  private double getAccerlation() {
+  private double getAcceleration() {
     return clampedVelocityDiff;
   }
 
