@@ -7,6 +7,7 @@ public class Intake extends GenericRollers<Intake.Target> {
     IDLE(0),
     INTAKE(4),
     HOLD(0),
+    FORCE_EJECT(2),
     EJECT_TOP(-8),
     // TODO: Add eject L4
     EJECT_L3(2),
