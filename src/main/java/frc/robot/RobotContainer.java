@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
@@ -262,18 +263,64 @@ public class RobotContainer {
                   }
                 }));
   }
+
   private void configureClimbBindings() {
-      driverB.y().whileTrue(new InstantCommand(() -> climb.setPositionTarget(ClimbTarget.TOP)));
-      driverB.a().whileTrue(new InstantCommand(() -> climb.setPositionTarget(ClimbTarget.BOTTOM)));
-    }
+    driverB.y().whileTrue(new InstantCommand(() -> climb.setPositionTarget(ClimbTarget.TOP)));
+
+    // Climb out and zero confirm
+    // Climb can only go to BOTTOM once, before getting stuck at TOP
+    new Trigger(() -> driverB.b().getAsBoolean() && driverB.start().getAsBoolean())
+        .onTrue(
+            climbController
+                .setPositionTargetCommand(ClimbTarget.BOTTOM)
+                .alongWith(superstructureController.goToStateCommand(SuperstructureState.CLIMB)));
+  }
 
   private void configureOverrideBindings() {
     driverA.leftBumper().whileTrue(swerve.setTargetApproachReef(.2, true));
     driverA.rightBumper().whileTrue(swerve.setTargetApproachReef(.2, false));
 
-    //zeroing
-    driverB.b().whileTrue(new InstantCommand(() -> superstructureController.setTargetState(SuperstructureState.ZERO)));
+    // zeroing
+    driverA.start().onTrue(swerve.zeroGyroCommand());
+    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
+
+    // Stop auto turning
+    driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
+
+    // Station angle snap
+    driverA
+        .x()
+        .onTrue(
+            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)))));
+
+    driverA
+        .b()
+        .onTrue(
+            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)))));
+
+    // Stopping all commands
+    driverB
+        .x()
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  superstructureController.setStopped(true);
+                  climbController.setStopped(true);
+                  rollers.setTargetState(RollerState.IDLE);
+                }));
+
+    driverB
+        .rightStick()
+        .whileTrue(new InstantCommand(() -> RobotState.getInstance().switchRotationLock()));
+
+    // zeroing
+    driverB
+        .b()
+        .whileTrue(
+            new InstantCommand(
+                () -> superstructureController.setTargetState(SuperstructureState.ZERO)));
   }
+
   private void configureAutos() {
     RobotConfig robotConfig;
     try {

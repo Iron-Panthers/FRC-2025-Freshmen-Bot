@@ -87,7 +87,7 @@ public class Elevator extends GenericSuperstructure<Elevator.ElevatorTarget>
     return this.getPosition() > ElevatorConstants.MIN_SAFE_HEIGHT_FOR_PIVOT;
   }
 
-  public void setZeroing(boolean zeroing) {
+  public void setZeroing(boolean zeroing) { // setZeroing(true) --> zeroes
     this.zeroing = zeroing;
   }
 
