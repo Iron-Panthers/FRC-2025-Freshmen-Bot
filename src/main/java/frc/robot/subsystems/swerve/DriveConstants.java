@@ -127,15 +127,15 @@ public class DriveConstants {
             new Gains(0.25, 2.26, 0, 50, 0, 0),
             new MotionProfileGains(4, 64, 640),
             new Gains(0.16, 0.67, 0, 1.5, 0, 0),
-            (45.0 / 15) * (17.0 / 27) * (50.0 / 16), // MK4i L2.5 16 tooth
-            150.0 / 7,
+            (30.0 / 15) * (25.0 / 32) * (54.0 / 14), // Mk5n L2.5 16 tooth
+            287.0 / 11,
             3.125);
         case SIM -> new ModuleConstants(
             new Gains(0.25, 2.26, 0, 70, 0, 0),
             new MotionProfileGains(4, 64, 640),
             new Gains(0.16, 0.67, 0, 1.5, 0, 0),
-            (45.0 / 15) * (17.0 / 27) * (50.0 / 16), // MK4i L2.5 16 tooth
-            150.0 / 7,
+            (30.0 / 15) * (25.0 / 32) * (54.0 / 14), // MK5n R2 ratio
+            287.0 / 11,
             3.125);
       };
   public static final DriveTrainSimulationConfig mapleSimConfig =
