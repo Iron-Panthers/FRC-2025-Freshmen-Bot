@@ -22,21 +22,17 @@ import frc.robot.Constants.Mode;
 import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
-import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.Climb.ClimbTarget;
 import frc.robot.subsystems.climb.ClimbController;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
-import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
-import frc.robot.subsystems.rgb.RGBIOCANdle;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
 import frc.robot.subsystems.rollers.intake.IntakeIO;
-import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
 import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
@@ -72,7 +68,7 @@ public class RobotContainer {
 
   // DO NOT DELETE - IF YOU DELETE, YOU WILL BE DELETED.
   private RobotState robotState = RobotState.getInstance();
-  
+
   // private SendableChooser<Command> autoChooser;
   private LoggedDashboardChooser<Command> autoChooser;
 
@@ -107,12 +103,12 @@ public class RobotContainer {
                   new ModuleIOTalonFXReal(DriveConstants.MODULE_CONFIGS[1]),
                   new ModuleIOTalonFXReal(DriveConstants.MODULE_CONFIGS[2]),
                   new ModuleIOTalonFXReal(DriveConstants.MODULE_CONFIGS[3]));
-          //   vision = new Vision(new VisionIOPhotonvision(4), new VisionIOPhotonvision(5));
-          rgb = new RGB(new RGBIOCANdle());
-          canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
-          intake = new Intake(new IntakeIOTalonFX());
-          rollerSensors = new RollerSensorsIOComp();
-          climb = new Climb(new ClimbIOTalonFX());
+          // //   vision = new Vision(new VisionIOPhotonvision(4), new VisionIOPhotonvision(5));
+          // rgb = new RGB(new RGBIOCANdle());
+          // canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
+          // intake = new Intake(new IntakeIOTalonFX());
+          // rollerSensors = new RollerSensorsIOComp();
+          // climb = new Climb(new ClimbIOTalonFX());
         }
         case SIM -> {
           SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
@@ -206,16 +202,17 @@ public class RobotContainer {
                       // superstructure.getElevatorPosition() > 3 ? 3 :
                       DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
 
-                  if (Math.abs(driverA.getLeftTriggerAxis()) > 0.1
-                      || Math.abs(driverA.getRightTriggerAxis()) > 0.1) {
-                    swerve.clearHeadingControl();
+                  // if (Math.abs(driverA.getLeftTriggerAxis()) > 0.1
+                  //     || Math.abs(driverA.getRightTriggerAxis()) > 0.1) {
+                  //   swerve.clearHeadingControl();
 
-                    // In SIM-2025, the "true" is a variable called autoAngle that is never changed
-                    // from true. I'm not sure what to do with this exactly...
-                  } else if (autoAngle) {
+                  //   // In SIM-2025, the "true" is a variable called autoAngle that is never
+                  // changed
+                  //   // from true. I'm not sure what to do with this exactly...
+                  // } else if (autoAngle) {
 
-                    determineSwerveTarget();
-                  }
+                  //   determineSwerveTarget();
+                  // }
                 })
             .withName("Drive Teleop"));
 
