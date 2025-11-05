@@ -14,6 +14,7 @@ public class Rollers extends SubsystemBase {
     IDLE,
     INTAKE,
     FORCE_INTAKE,
+    FORCE_EJECT,
     EJECT_TOP,
     EJECT_L2,
     EJECT_L3,
@@ -60,6 +61,9 @@ public class Rollers extends SubsystemBase {
           intakeTime = 0;
         }
       }
+      case FORCE_EJECT -> {
+        intake.setVoltageTarget(Intake.Target.FORCE_EJECT);
+      }
       case HOLD -> {
         intake.setVoltageTarget(Intake.Target.HOLD);
       }
@@ -103,7 +107,7 @@ public class Rollers extends SubsystemBase {
   public Command setTargetCommand(RollerState target) {
     return new InstantCommand(
         () -> {
-          this.targetState = target;
+          setTargetState(target);
         });
   }
 

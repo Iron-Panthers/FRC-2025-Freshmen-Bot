@@ -17,24 +17,22 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
-import frc.robot.subsystems.canWatchdog.CANWatchdogIOComp;
 import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.Climb.ClimbTarget;
 import frc.robot.subsystems.climb.ClimbController;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
-import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
-import frc.robot.subsystems.rgb.RGBIOCANdle;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
 import frc.robot.subsystems.rollers.intake.IntakeIO;
-import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
 import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
@@ -105,12 +103,12 @@ public class RobotContainer {
                   new ModuleIOTalonFXReal(DriveConstants.MODULE_CONFIGS[1]),
                   new ModuleIOTalonFXReal(DriveConstants.MODULE_CONFIGS[2]),
                   new ModuleIOTalonFXReal(DriveConstants.MODULE_CONFIGS[3]));
-          //   vision = new Vision(new VisionIOPhotonvision(4), new VisionIOPhotonvision(5));
-          rgb = new RGB(new RGBIOCANdle());
-          canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
-          intake = new Intake(new IntakeIOTalonFX());
-          rollerSensors = new RollerSensorsIOComp();
-          climb = new Climb(new ClimbIOTalonFX());
+          // //   vision = new Vision(new VisionIOPhotonvision(4), new VisionIOPhotonvision(5));
+          // rgb = new RGB(new RGBIOCANdle());
+          // canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
+          // intake = new Intake(new IntakeIOTalonFX());
+          // rollerSensors = new RollerSensorsIOComp();
+          // climb = new Climb(new ClimbIOTalonFX());
         }
         case SIM -> {
           SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
@@ -204,30 +202,123 @@ public class RobotContainer {
                       // superstructure.getElevatorPosition() > 3 ? 3 :
                       DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
 
-                  if (Math.abs(driverA.getLeftTriggerAxis()) > 0.1
-                      || Math.abs(driverA.getRightTriggerAxis()) > 0.1) {
-                    swerve.clearHeadingControl();
+                  // if (Math.abs(driverA.getLeftTriggerAxis()) > 0.1
+                  //     || Math.abs(driverA.getRightTriggerAxis()) > 0.1) {
+                  //   swerve.clearHeadingControl();
 
-                    // In SIM-2025, the "true" is a variable called autoAngle that is never changed
-                    // from true. I'm not sure what to do with this exactly...
-                  } else if (autoAngle) {
+                  //   // In SIM-2025, the "true" is a variable called autoAngle that is never
+                  // changed
+                  //   // from true. I'm not sure what to do with this exactly...
+                  // } else if (autoAngle) {
 
-                    determineSwerveTarget();
-                  }
+                  //   determineSwerveTarget();
+                  // }
                 })
             .withName("Drive Teleop"));
 
-    // driverA.start().onTrue(swerve.zeroGyroCommand());
-
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
-    driverA.b().whileTrue(swerve.setTargetApproachReef(.2, true));
-    driverA.y().whileTrue(swerve.setTargetApproachReef(.2, false));
+    configureCoralBindings();
+    configureOverrideBindings();
+    configureClimbBindings();
+  }
 
-    driverB.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
-    driverB.y().onTrue(rollers.setTargetCommand(RollerState.EJECT_L4));
+  private void configureCoralBindings() {
 
-    driverB.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L3));
-    driverB.b().onTrue(rollers.setTargetCommand(RollerState.EJECT_L3));
+    driverB
+        .povUp()
+        .whileTrue(
+            new InstantCommand(
+                () -> superstructureController.setTargetState(SuperstructureState.L4)));
+    driverB
+        .povLeft()
+        .whileTrue(
+            new InstantCommand(
+                () -> superstructureController.setTargetState(SuperstructureState.L3)));
+    driverB
+        .povRight()
+        .whileTrue(
+            new InstantCommand(
+                () -> superstructureController.setTargetState(SuperstructureState.L2)));
+
+    driverB.leftBumper().whileTrue(rollers.setTargetCommand(RollerState.HOLD));
+    driverB.leftTrigger().whileTrue(rollers.setTargetCommand(RollerState.INTAKE));
+
+    driverB
+        .rightTrigger()
+        .whileTrue(
+            new InstantCommand(
+                () -> {
+                  if (superstructureController.superstructureReachedTarget()) {
+                    if (superstructureController.getTargetState() == SuperstructureState.L4) {
+                      rollers.setTargetState(RollerState.EJECT_TOP);
+                    } else if (superstructureController.getTargetState()
+                        == SuperstructureState.L3) {
+                      rollers.setTargetState(RollerState.EJECT_L3);
+                    } else if (superstructureController.getTargetState()
+                        == SuperstructureState.L2) {
+                      rollers.setTargetState(RollerState.EJECT_L2);
+                    }
+                  } else {
+                    rollers.setTargetState(RollerState.FORCE_EJECT);
+                  }
+                }));
+  }
+
+  private void configureClimbBindings() {
+    driverB.y().whileTrue(new InstantCommand(() -> climb.setPositionTarget(ClimbTarget.TOP)));
+
+    // Climb out and zero confirm
+    // Climb can only go to BOTTOM once, before getting stuck at TOP
+    new Trigger(() -> driverB.b().getAsBoolean() && driverB.start().getAsBoolean())
+        .onTrue(
+            climbController
+                .setPositionTargetCommand(ClimbTarget.BOTTOM)
+                .alongWith(superstructureController.goToStateCommand(SuperstructureState.CLIMB)));
+  }
+
+  private void configureOverrideBindings() {
+    driverA.leftBumper().whileTrue(swerve.setTargetApproachReef(.2, true));
+    driverA.rightBumper().whileTrue(swerve.setTargetApproachReef(.2, false));
+
+    // zeroing
+    driverA.start().onTrue(swerve.zeroGyroCommand());
+    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
+
+    // Stop auto turning
+    driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
+
+    // Station angle snap
+    driverA
+        .x()
+        .onTrue(
+            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)))));
+
+    driverA
+        .b()
+        .onTrue(
+            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)))));
+
+    // Stopping all commands
+    driverB
+        .x()
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  superstructureController.setStopped(true);
+                  climbController.setStopped(true);
+                  rollers.setTargetState(RollerState.IDLE);
+                }));
+
+    driverB
+        .rightStick()
+        .whileTrue(new InstantCommand(() -> RobotState.getInstance().switchRotationLock()));
+
+    // zeroing
+    driverB
+        .b()
+        .whileTrue(
+            new InstantCommand(
+                () -> superstructureController.setTargetState(SuperstructureState.ZERO)));
   }
 
   private void configureAutos() {
