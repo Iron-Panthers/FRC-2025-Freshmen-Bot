@@ -228,8 +228,6 @@ public class RobotContainer {
 
     driverB.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L3));
     driverB.b().onTrue(rollers.setTargetCommand(RollerState.EJECT_L3));
-
-    
   }
 
   private void configureAutos() {
