@@ -6,7 +6,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -32,6 +31,7 @@ import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rgb.RGBIOCANdle;
 import frc.robot.subsystems.rollers.Rollers;
+import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
 import frc.robot.subsystems.rollers.intake.IntakeIO;
 import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
@@ -70,7 +70,7 @@ public class RobotContainer {
 
   // DO NOT DELETE - IF YOU DELETE, YOU WILL BE DELETED.
   private RobotState robotState = RobotState.getInstance();
-  
+
   // private SendableChooser<Command> autoChooser;
   private LoggedDashboardChooser<Command> autoChooser;
 
@@ -220,9 +220,16 @@ public class RobotContainer {
     // driverA.start().onTrue(swerve.zeroGyroCommand());
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
-
     driverA.b().whileTrue(swerve.setTargetApproachReef(.2, true));
     driverA.y().whileTrue(swerve.setTargetApproachReef(.2, false));
+
+    driverB.x().onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
+    driverB.y().onTrue(rollers.setTargetCommand(RollerState.EJECT_L4));
+
+    driverB.a().onTrue(superstructureController.goToStateCommand(SuperstructureState.L3));
+    driverB.b().onTrue(rollers.setTargetCommand(RollerState.EJECT_L3));
+
+    
   }
 
   private void configureAutos() {
