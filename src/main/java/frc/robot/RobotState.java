@@ -77,6 +77,8 @@ public class RobotState {
   private ApproachPose[] approachPoses =
       generateApproachPoses(lastApproachOffset, lastApproachBSide);
 
+  private boolean isRotationLocked = true;
+
   private static RobotState instance;
 
   public static RobotState getInstance() {
@@ -278,5 +280,13 @@ public class RobotState {
 
   public Pose2d getApproachPose(double offset, boolean bside) {
     return findApproachPose(offset, bside).getAlliancePose();
+  }
+
+  public boolean isRotationLocked() {
+    return isRotationLocked;
+  }
+
+  public void switchRotationLock() {
+    isRotationLocked = !isRotationLocked;
   }
 }

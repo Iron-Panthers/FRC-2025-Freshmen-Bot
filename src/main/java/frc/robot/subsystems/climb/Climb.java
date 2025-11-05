@@ -15,7 +15,8 @@ public class Climb extends GenericSuperstructure<Climb.ClimbTarget> {
     BOTTOM(0.07),
 
     // "Top" is apex of climb
-    TOP(0.307),
+    // FIXME Climb is x2 the original position on freshman; PID may be screwed
+    TOP(0.614),
 
     // To get coral out
     CLEAR(-0.15),
