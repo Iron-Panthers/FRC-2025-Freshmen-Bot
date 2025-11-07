@@ -13,10 +13,12 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
@@ -211,6 +213,14 @@ public class RobotContainer {
 
   private void configureBindings() {
     // -----Driver Controls-----
+
+    configureCoralBindings();
+    configureOverrideBindings();
+    configureClimbBindings();
+    configureDriveBindings();
+  }
+
+  private void configureDriveBindings() {
     swerve.setDefaultCommand(
         swerve
             .run(
@@ -227,9 +237,34 @@ public class RobotContainer {
                 })
             .withName("Drive Teleop"));
 
-    configureCoralBindings();
-    configureOverrideBindings();
-    configureClimbBindings();
+    // zeroing
+    driverA.start().onTrue(swerve.zeroGyroCommand());
+
+    // Station angle snap
+    driverA
+        .x()
+        .onTrue(
+            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)))));
+
+    driverA
+        .b()
+        .onTrue(
+            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)))));
+
+    new Trigger(
+            () -> (Math.abs(driverA.getRightY()) > 0.2) || (Math.abs(driverA.getRightX()) > 0.2))
+        .whileTrue(
+            new FunctionalCommand(
+                () -> {},
+                () ->
+                    swerve.setTargetHeading(
+                        calculateSnapTargetHeading(
+                            new Rotation2d(
+                                Math.atan2(
+                                    MathUtil.applyDeadband(-driverA.getRightX(), 0.1),
+                                    MathUtil.applyDeadband(-driverA.getRightY(), 0.1))))),
+                interrupted -> {},
+                () -> false));
   }
 
   private void configureCoralBindings() {
@@ -293,21 +328,6 @@ public class RobotContainer {
   }
 
   private void configureOverrideBindings() {
-
-    // zeroing
-    driverA.start().onTrue(swerve.zeroGyroCommand());
-
-    // Station angle snap
-    driverA
-        .x()
-        .onTrue(
-            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)))));
-
-    driverA
-        .b()
-        .onTrue(
-            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)))));
-
     // Stopping all commands
     driverB
         .x()
