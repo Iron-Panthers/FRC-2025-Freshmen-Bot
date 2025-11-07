@@ -1,4 +1,4 @@
-package frc.robot.subsystems.climb;
+package frc.robot.subsystems.climb.climb_pivot;
 
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;

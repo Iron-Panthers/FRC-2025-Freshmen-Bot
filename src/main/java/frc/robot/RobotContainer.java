@@ -22,29 +22,27 @@ import frc.robot.Constants.Mode;
 import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
-import frc.robot.subsystems.climb.Climb;
-import frc.robot.subsystems.climb.Climb.ClimbTarget;
 import frc.robot.subsystems.climb.ClimbController;
-import frc.robot.subsystems.climb.ClimbIO;
-import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbController.ClimbState;
+import frc.robot.subsystems.climb.climb_pivot.Climb;
+import frc.robot.subsystems.climb.climb_pivot.Climb.ClimbTarget;
+import frc.robot.subsystems.climb.climb_sensors.ClimbSensorsIO;
+import frc.robot.subsystems.climb.climb_sensors.ClimbSensorsIOComp;
+import frc.robot.subsystems.climb.climb_pivot.ClimbIO;
+import frc.robot.subsystems.climb.climb_pivot.ClimbIOSim;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.Rollers.RollerState;
 import frc.robot.subsystems.rollers.intake.Intake;
 import frc.robot.subsystems.rollers.intake.IntakeIO;
-import frc.robot.subsystems.rollers.intake.IntakeIOTalonFX;
 import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
 import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
-import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
-import frc.robot.subsystems.superstructure.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.superstructure.pivot.Pivot;
-import frc.robot.subsystems.superstructure.pivot.PivotIO;
 import frc.robot.subsystems.superstructure.pivot.PivotIOSim;
-import frc.robot.subsystems.superstructure.pivot.PivotIOTalonFX;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.DriveConstants;
 import frc.robot.subsystems.swerve.GyroIO;
@@ -95,7 +93,7 @@ public class RobotContainer {
   private RollerSensorsIOComp rollerSensors;
   private Intake intake;
   private Elevator elevator;
-  private Pivot pivot;
+  private ClimbSensorsIOComp climbSensors;
 
   public RobotContainer() {
 
@@ -112,11 +110,9 @@ public class RobotContainer {
           // //   vision = new Vision(new VisionIOPhotonvision(4), new VisionIOPhotonvision(5));
           // rgb = new RGB(new RGBIOCANdle());
           // canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
-          intake = new Intake(new IntakeIOTalonFX());
-          rollerSensors = new RollerSensorsIOComp();
+          // intake = new Intake(new IntakeIOTalonFX());
+          // rollerSensors = new RollerSensorsIOComp();
           // climb = new Climb(new ClimbIOTalonFX());
-          pivot = new Pivot(new PivotIOTalonFX());
-          elevator = new Elevator(new ElevatorIOTalonFX());
         }
         case SIM -> {
           SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
@@ -136,8 +132,9 @@ public class RobotContainer {
               new Vision(
                   new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
                   new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
-          elevator = new Elevator(new ElevatorIOSim());
-          pivot = new Pivot(new PivotIOSim());
+          superstructureController =
+              new SuperstructureController(
+                  new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
 
           climb = new Climb(new ClimbIOSim());
           SimulatedArena.getInstance().resetFieldForAuto();
@@ -177,17 +174,12 @@ public class RobotContainer {
     if (climb == null) {
       climb = new Climb(new ClimbIO() {});
     }
-    climbController = new ClimbController(climb);
 
-    if (pivot == null) {
-      pivot = new Pivot(new PivotIO() {});
+    if(climbSensors == null) {
+      climbSensors = new ClimbSensorsIOComp() {};
     }
 
-    if (elevator == null) {
-      elevator = new Elevator(new ElevatorIO() {});
-    }
-
-    superstructureController = new SuperstructureController(elevator, pivot);
+    climbController = new ClimbController(climb, climbSensors);
 
     nameCommands();
     configureAutos();
@@ -235,39 +227,34 @@ public class RobotContainer {
 
     driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
     configureCoralBindings();
-    // configureOverrideBindings();
-    // configureClimbBindings();
+    configureOverrideBindings();
+    configureClimbBindings();
   }
 
   private void configureCoralBindings() {
 
     driverB
         .povUp()
-        .onTrue(
+        .whileTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.L4)));
     driverB
         .povLeft()
-        .onTrue(
+        .whileTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.L3)));
     driverB
         .povRight()
-        .onTrue(
+        .whileTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.L2)));
 
-    driverB.leftBumper().onTrue(rollers.setTargetCommand(RollerState.HOLD));
-    driverB
-        .leftTrigger()
-        .onTrue(
-            new InstantCommand(
-                    () -> superstructureController.setTargetState(SuperstructureState.INTAKE))
-                .alongWith(rollers.setTargetCommand(RollerState.INTAKE)));
+    driverB.leftBumper().whileTrue(rollers.setTargetCommand(RollerState.HOLD));
+    driverB.leftTrigger().whileTrue(rollers.setTargetCommand(RollerState.INTAKE));
 
     driverB
         .rightTrigger()
-        .onTrue(
+        .whileTrue(
             new InstantCommand(
                 () -> {
                   if (superstructureController.superstructureReachedTarget()) {
@@ -294,7 +281,7 @@ public class RobotContainer {
     new Trigger(() -> driverB.b().getAsBoolean() && driverB.start().getAsBoolean())
         .onTrue(
             climbController
-                .setPositionTargetCommand(ClimbTarget.BOTTOM)
+                .setPositionTargetCommand(ClimbState.BOTTOM)
                 .alongWith(superstructureController.goToStateCommand(SuperstructureState.CLIMB)));
   }
 
