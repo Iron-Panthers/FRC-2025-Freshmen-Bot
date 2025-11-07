@@ -3,7 +3,6 @@ package frc.robot.subsystems.climb.climb_pivot;
 import static frc.robot.subsystems.climb.climb_pivot.ClimbConstants.*;
 
 import com.ctre.phoenix6.configs.VoltageConfigs;
-
 import frc.robot.lib.generic_subsystems.superstructure.GenericSuperstructureConfiguration;
 import frc.robot.lib.generic_subsystems.superstructure.GenericSuperstructureIOTalonFX;
 
@@ -18,9 +17,6 @@ public class ClimbIOTalonFX extends GenericSuperstructureIOTalonFX implements Cl
             .withReduction(CLIMB_CONFIG.reduction())
             .withUpperVoltageLimit(UPPER_VOLT_LIMIT)
             .withLowerVoltageLimit(LOWER_VOLT_LIMIT)
-            .withZeroingVolts(ZEROING_VOLTS)
-            .withZeroingOffset(ZEROING_OFFSET)
-            .withZeroingVoltageThreshold(ZEROING_VOLTAGE_THRESHOLD)
             .withCANCoderID(CLIMB_CONFIG.canCoderID())
             .withCANCoderDirection(CANCODER_DIRECTION)
             .withCANCoderOffset(CLIMB_CONFIG.canCoderOffset())
@@ -38,12 +34,10 @@ public class ClimbIOTalonFX extends GenericSuperstructureIOTalonFX implements Cl
         MOTION_MAGIC_CONFIG.cruiseVelocity(),
         0,
         GRAVITY_TYPE);
-        
   }
 
-
-@Override
- public void runPosition(double rotations) {
+  @Override
+  public void runPosition(double rotations) {
     VoltageConfigs voltageConfigs = new VoltageConfigs();
     voltageConfigs.withPeakForwardVoltage(
         talon.getPosition().getValueAsDouble() % 0.4 > 0.2

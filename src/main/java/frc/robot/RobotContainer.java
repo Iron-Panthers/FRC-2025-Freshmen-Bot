@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
@@ -25,11 +24,10 @@ import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
 import frc.robot.subsystems.climb.ClimbController;
 import frc.robot.subsystems.climb.ClimbController.ClimbState;
 import frc.robot.subsystems.climb.climb_pivot.Climb;
-import frc.robot.subsystems.climb.climb_pivot.Climb.ClimbTarget;
-import frc.robot.subsystems.climb.climb_sensors.ClimbSensorsIO;
-import frc.robot.subsystems.climb.climb_sensors.ClimbSensorsIOComp;
 import frc.robot.subsystems.climb.climb_pivot.ClimbIO;
 import frc.robot.subsystems.climb.climb_pivot.ClimbIOSim;
+import frc.robot.subsystems.climb.climb_pivot.ClimbIOTalonFX;
+import frc.robot.subsystems.climb.climb_sensors.ClimbSensorsIOComp;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rollers.Rollers;
@@ -40,9 +38,13 @@ import frc.robot.subsystems.rollers.sensors.RollerSensorsIOComp;
 import frc.robot.subsystems.superstructure.SuperstructureController;
 import frc.robot.subsystems.superstructure.SuperstructureController.SuperstructureState;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.superstructure.pivot.Pivot;
+import frc.robot.subsystems.superstructure.pivot.PivotIO;
 import frc.robot.subsystems.superstructure.pivot.PivotIOSim;
+import frc.robot.subsystems.superstructure.pivot.PivotIOTalonFX;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.DriveConstants;
 import frc.robot.subsystems.swerve.GyroIO;
@@ -93,6 +95,7 @@ public class RobotContainer {
   private RollerSensorsIOComp rollerSensors;
   private Intake intake;
   private Elevator elevator;
+  private Pivot pivot;
   private ClimbSensorsIOComp climbSensors;
 
   public RobotContainer() {
@@ -112,7 +115,9 @@ public class RobotContainer {
           // canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
           // intake = new Intake(new IntakeIOTalonFX());
           // rollerSensors = new RollerSensorsIOComp();
-          // climb = new Climb(new ClimbIOTalonFX());
+          climb = new Climb(new ClimbIOTalonFX());
+          elevator = new Elevator(new ElevatorIOTalonFX());
+          pivot = new Pivot(new PivotIOTalonFX());
         }
         case SIM -> {
           SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
@@ -132,9 +137,8 @@ public class RobotContainer {
               new Vision(
                   new VisionIOPhotonvisionSim(4, driveSimulation::getSimulatedDriveTrainPose),
                   new VisionIOPhotonvisionSim(5, driveSimulation::getSimulatedDriveTrainPose));
-          superstructureController =
-              new SuperstructureController(
-                  new Elevator(new ElevatorIOSim()), new Pivot(new PivotIOSim()));
+          elevator = new Elevator(new ElevatorIOSim());
+          pivot = new Pivot(new PivotIOSim());
 
           climb = new Climb(new ClimbIOSim());
           SimulatedArena.getInstance().resetFieldForAuto();
@@ -175,11 +179,19 @@ public class RobotContainer {
       climb = new Climb(new ClimbIO() {});
     }
 
-    if(climbSensors == null) {
+    if (climbSensors == null) {
       climbSensors = new ClimbSensorsIOComp() {};
     }
 
     climbController = new ClimbController(climb, climbSensors);
+
+    if (elevator == null) {
+      elevator = new Elevator(new ElevatorIO() {});
+    }
+    if (pivot == null) {
+      pivot = new Pivot(new PivotIO() {});
+    }
+    superstructureController = new SuperstructureController(elevator, pivot);
 
     nameCommands();
     configureAutos();
@@ -274,11 +286,12 @@ public class RobotContainer {
   }
 
   private void configureClimbBindings() {
-    driverB.y().whileTrue(new InstantCommand(() -> climb.setPositionTarget(ClimbTarget.TOP)));
+    driverB.y().onTrue(climbController.setPositionTargetCommand(ClimbState.TOP));
 
     // Climb out and zero confirm
     // Climb can only go to BOTTOM once, before getting stuck at TOP
-    new Trigger(() -> driverB.b().getAsBoolean() && driverB.start().getAsBoolean())
+    driverB
+        .b()
         .onTrue(
             climbController
                 .setPositionTargetCommand(ClimbState.BOTTOM)
