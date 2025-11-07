@@ -1,6 +1,6 @@
-package frc.robot.subsystems.climb;
+package frc.robot.subsystems.climb.climb_pivot;
 
-import static frc.robot.subsystems.climb.ClimbConstants.INDUCTION_PORT_NUMBER;
+import static frc.robot.subsystems.climb.climb_pivot.ClimbConstants.INDUCTION_PORT_NUMBER;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,7 +16,7 @@ public class Climb extends GenericSuperstructure<Climb.ClimbTarget> {
 
     // "Top" is apex of climb
     // FIXME Climb is x2 the original position on freshman; PID may be screwed
-    TOP(0.614),
+    TOP(0.29),
 
     // To get coral out
     CLEAR(-0.15),

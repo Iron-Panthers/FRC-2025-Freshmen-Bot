@@ -16,7 +16,7 @@ public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements L
     STOW(0),
     L2(136),
     L3(130),
-    CLIMB(0),
+    CLIMB(160),
     L4(124),
     ZERO(0);
 

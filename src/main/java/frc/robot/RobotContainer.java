@@ -17,16 +17,17 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
 import frc.robot.subsystems.canWatchdog.CANWatchdogIO;
-import frc.robot.subsystems.climb.Climb;
-import frc.robot.subsystems.climb.Climb.ClimbTarget;
 import frc.robot.subsystems.climb.ClimbController;
-import frc.robot.subsystems.climb.ClimbIO;
-import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbController.ClimbState;
+import frc.robot.subsystems.climb.climb_pivot.Climb;
+import frc.robot.subsystems.climb.climb_pivot.ClimbIO;
+import frc.robot.subsystems.climb.climb_pivot.ClimbIOSim;
+import frc.robot.subsystems.climb.climb_pivot.ClimbIOTalonFX;
+import frc.robot.subsystems.climb.climb_sensors.ClimbSensorsIOComp;
 import frc.robot.subsystems.rgb.RGB;
 import frc.robot.subsystems.rgb.RGBIO;
 import frc.robot.subsystems.rollers.Rollers;
@@ -96,6 +97,7 @@ public class RobotContainer {
   private Intake intake;
   private Elevator elevator;
   private Pivot pivot;
+  private ClimbSensorsIOComp climbSensors;
 
   public RobotContainer() {
 
@@ -114,9 +116,9 @@ public class RobotContainer {
           // canWatchdog = new CANWatchdog(new CANWatchdogIOComp(), rgb);
           intake = new Intake(new IntakeIOTalonFX());
           rollerSensors = new RollerSensorsIOComp();
-          // climb = new Climb(new ClimbIOTalonFX());
-          pivot = new Pivot(new PivotIOTalonFX());
+          climb = new Climb(new ClimbIOTalonFX());
           elevator = new Elevator(new ElevatorIOTalonFX());
+          pivot = new Pivot(new PivotIOTalonFX());
         }
         case SIM -> {
           SwerveDriveSimulation driveSimulation = RobotSimState.getInstance().getDriveSimulation();
@@ -177,16 +179,19 @@ public class RobotContainer {
     if (climb == null) {
       climb = new Climb(new ClimbIO() {});
     }
-    climbController = new ClimbController(climb);
 
-    if (pivot == null) {
-      pivot = new Pivot(new PivotIO() {});
+    if (climbSensors == null) {
+      climbSensors = new ClimbSensorsIOComp() {};
     }
+
+    climbController = new ClimbController(climb, climbSensors);
 
     if (elevator == null) {
       elevator = new Elevator(new ElevatorIO() {});
     }
-
+    if (pivot == null) {
+      pivot = new Pivot(new PivotIO() {});
+    }
     superstructureController = new SuperstructureController(elevator, pivot);
 
     nameCommands();
@@ -233,10 +238,9 @@ public class RobotContainer {
                 })
             .withName("Drive Teleop"));
 
-    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
     configureCoralBindings();
-    // configureOverrideBindings();
-    // configureClimbBindings();
+    configureOverrideBindings();
+    configureClimbBindings();
   }
 
   private void configureCoralBindings() {
@@ -287,24 +291,22 @@ public class RobotContainer {
   }
 
   private void configureClimbBindings() {
-    driverB.y().whileTrue(new InstantCommand(() -> climb.setPositionTarget(ClimbTarget.TOP)));
+    driverB.y().onTrue(climbController.setPositionTargetCommand(ClimbState.TOP));
 
     // Climb out and zero confirm
     // Climb can only go to BOTTOM once, before getting stuck at TOP
-    new Trigger(() -> driverB.b().getAsBoolean() && driverB.start().getAsBoolean())
+    driverB
+        .b()
         .onTrue(
             climbController
-                .setPositionTargetCommand(ClimbTarget.BOTTOM)
+                .setPositionTargetCommand(ClimbState.BOTTOM)
                 .alongWith(superstructureController.goToStateCommand(SuperstructureState.CLIMB)));
   }
 
   private void configureOverrideBindings() {
-    driverA.leftBumper().whileTrue(swerve.setTargetApproachReef(.2, true));
-    driverA.rightBumper().whileTrue(swerve.setTargetApproachReef(.2, false));
 
     // zeroing
     driverA.start().onTrue(swerve.zeroGyroCommand());
-    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
     // Stop auto turning
     driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
@@ -337,8 +339,8 @@ public class RobotContainer {
 
     // zeroing
     driverB
-        .b()
-        .whileTrue(
+        .a()
+        .onTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.ZERO)));
   }
