@@ -262,7 +262,12 @@ public class RobotContainer {
                 () -> superstructureController.setTargetState(SuperstructureState.L2)));
 
     driverB.leftBumper().onTrue(rollers.setTargetCommand(RollerState.HOLD));
-    driverB.leftTrigger().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
+    driverB
+        .leftTrigger()
+        .onTrue(
+            new InstantCommand(
+                    () -> superstructureController.setTargetState(SuperstructureState.INTAKE))
+                .alongWith(rollers.setTargetCommand(RollerState.INTAKE)));
 
     driverB
         .rightTrigger()
