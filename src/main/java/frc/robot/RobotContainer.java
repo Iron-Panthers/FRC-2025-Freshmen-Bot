@@ -247,26 +247,26 @@ public class RobotContainer {
 
     driverB
         .povUp()
-        .whileTrue(
+        .onTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.L4)));
     driverB
         .povLeft()
-        .whileTrue(
+        .onTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.L3)));
     driverB
         .povRight()
-        .whileTrue(
+        .onTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.L2)));
 
-    driverB.leftBumper().whileTrue(rollers.setTargetCommand(RollerState.HOLD));
-    driverB.leftTrigger().whileTrue(rollers.setTargetCommand(RollerState.INTAKE));
+    driverB.leftBumper().onTrue(rollers.setTargetCommand(RollerState.HOLD));
+    driverB.leftTrigger().onTrue(rollers.setTargetCommand(RollerState.INTAKE));
 
     driverB
         .rightTrigger()
-        .whileTrue(
+        .onTrue(
             new InstantCommand(
                 () -> {
                   if (superstructureController.superstructureReachedTarget()) {
@@ -299,12 +299,9 @@ public class RobotContainer {
   }
 
   private void configureOverrideBindings() {
-    driverA.leftBumper().whileTrue(swerve.setTargetApproachReef(.2, true));
-    driverA.rightBumper().whileTrue(swerve.setTargetApproachReef(.2, false));
 
     // zeroing
     driverA.start().onTrue(swerve.zeroGyroCommand());
-    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
 
     // Stop auto turning
     driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
@@ -338,7 +335,7 @@ public class RobotContainer {
     // zeroing
     driverB
         .a()
-        .whileTrue(
+        .onTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.ZERO)));
   }
