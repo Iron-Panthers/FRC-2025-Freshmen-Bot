@@ -5,8 +5,8 @@ import frc.robot.Constants;
 public class IntakeConstants {
   public static final int ID =
       switch (Constants.getRobotType()) {
-        case COMP -> 26;
-        case SIM -> 26;
+        case COMP -> 19;
+        case SIM -> 19;
         default -> 0;
       };
   public static final int CURRENT_LIMIT_AMPS =
@@ -18,7 +18,7 @@ public class IntakeConstants {
   // TODO: change to InvertedValue
   public static final boolean INVERTED =
       switch (Constants.getRobotType()) {
-        case COMP -> false;
+        case COMP -> true;
         case SIM -> false;
         default -> false;
       };

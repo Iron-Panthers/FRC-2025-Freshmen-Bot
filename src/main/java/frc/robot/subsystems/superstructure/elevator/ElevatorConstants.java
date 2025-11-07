@@ -14,7 +14,7 @@ public class ElevatorConstants {
   public static final ElevatorConfig ELEVATOR_CONFIG =
       switch (Constants.getRobotType()) {
         case COMP -> new ElevatorConfig(
-            CAN.at(43, "Elevator 1"), CAN.at(44, "Elevator 2"), (58.0 / 14.0) / 6);
+            CAN.at(16, "Elevator 1"), CAN.at(15, "Elevator 2"), 1 / 1.75);
         case SIM -> new ElevatorConfig(
             CAN.at(43, "Elevator 1"), CAN.at(44, "Elevator 2"), (58.0 / 14.0));
         default -> new ElevatorConfig(0, 0, 1); // FIXME
@@ -22,14 +22,14 @@ public class ElevatorConstants {
 
   public static final PIDGains GAINS =
       switch (Constants.getRobotType()) {
-        case COMP -> new PIDGains(2, 0, 0, 0, 0.08, 0.002, 0.35);
+        case COMP -> new PIDGains(10, 0, 0, 0, 0.083, 0.00849, 0.4);
         case SIM -> new PIDGains(2, 0, 0, 0, 0.03, 0.001, 2.63);
         default -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
       };
 
   public static final MotionMagicConfig MOTION_MAGIC_CONFIG =
       switch (Constants.getRobotType()) {
-        case COMP -> new MotionMagicConfig(500, 100, 0);
+        case COMP -> new MotionMagicConfig(300, 28, 0);
         case SIM -> new MotionMagicConfig(500, 100, 0);
         default -> new MotionMagicConfig(0, 0, 0);
       };

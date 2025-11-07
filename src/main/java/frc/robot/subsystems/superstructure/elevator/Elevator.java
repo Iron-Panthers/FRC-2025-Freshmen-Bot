@@ -17,12 +17,11 @@ public class Elevator extends GenericSuperstructure<Elevator.ElevatorTarget>
   public enum ElevatorTarget implements GenericSuperstructure.PositionTarget {
     BOTTOM(0.6),
     L2(0),
-    L3(4),
-    L4(32.5),
+    L3(10),
+    L4(32),
     TOP(31),
     INTAKE(4),
-    CLIMB(13),
-    SAFE_MIDWAY(11.5);
+    CLIMB(13);
 
     private double position = 0;
 
