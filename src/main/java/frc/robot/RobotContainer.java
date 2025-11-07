@@ -219,22 +219,11 @@ public class RobotContainer {
                       -driverA.getLeftY(),
                       -driverA.getLeftX(),
                       driverA.getLeftTriggerAxis() - driverA.getRightTriggerAxis(),
-                      // In SIM-2025, the commented line of code below is present, but here there
-                      // isn't a superstructure variable yet.
-                      // superstructure.getElevatorPosition() > 3 ? 3 :
                       DriveConstants.DRIVE_CONFIG.maxLinearAcceleration());
-
-                  // if (Math.abs(driverA.getLeftTriggerAxis()) > 0.1
-                  //     || Math.abs(driverA.getRightTriggerAxis()) > 0.1) {
-                  //   swerve.clearHeadingControl();
-
-                  //   // In SIM-2025, the "true" is a variable called autoAngle that is never
-                  // changed
-                  //   // from true. I'm not sure what to do with this exactly...
-                  // } else if (autoAngle) {
-
-                  //   determineSwerveTarget();
-                  // }
+                  if (Math.abs(driverA.getLeftTriggerAxis()) > 0.1
+                      || Math.abs(driverA.getRightTriggerAxis()) > 0.1) {
+                    swerve.clearHeadingControl();
+                  }
                 })
             .withName("Drive Teleop"));
 
@@ -307,9 +296,6 @@ public class RobotContainer {
 
     // zeroing
     driverA.start().onTrue(swerve.zeroGyroCommand());
-
-    // Stop auto turning
-    driverA.y().onTrue(new InstantCommand(() -> autoAngle = !autoAngle));
 
     // Station angle snap
     driverA
