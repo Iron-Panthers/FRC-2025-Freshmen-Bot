@@ -12,12 +12,12 @@ import org.littletonrobotics.junction.Logger;
 public class Pivot extends GenericSuperstructure<Pivot.PivotTarget> implements LoggableMechanism3d {
   public enum PivotTarget implements GenericSuperstructure.PositionTarget {
     TOP(90),
-    INTAKE(250),
-    STOW(200),
-    L2(40),
-    L3(55),
-    CLIMB(200),
-    L4(40),
+    INTAKE(-49),
+    STOW(0),
+    L2(136),
+    L3(130),
+    CLIMB(0),
+    L4(124),
     ZERO(0);
 
     private double position;

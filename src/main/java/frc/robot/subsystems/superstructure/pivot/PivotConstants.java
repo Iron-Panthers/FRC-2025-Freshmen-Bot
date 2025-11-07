@@ -21,14 +21,14 @@ public class PivotConstants {
 
   public static final PIDGains GAINS =
       switch (Constants.getRobotType()) {
-        case COMP -> new PIDGains(25, 0, 0, 0, 7.91, 0, 0.3);
+        case COMP -> new PIDGains(25, 0, 0, 0, 7.9, 0.24, 0.3);
         case SIM -> new PIDGains(50, 0, 0, 0, 8 / 0.8722, 0, 0.35);
         default -> new PIDGains(0, 0, 0, 0, 0, 0, 0);
       };
 
   public static final MotionMagicConfig MOTION_MAGIC_CONFIG =
       switch (Constants.getRobotType()) {
-        case COMP -> new MotionMagicConfig(30, 1); // 3, 10
+        case COMP -> new MotionMagicConfig(4, 1); // 3, 10
         case SIM -> new MotionMagicConfig(7.5, 10); // 3, 10
         default -> new MotionMagicConfig(0, 0);
       };

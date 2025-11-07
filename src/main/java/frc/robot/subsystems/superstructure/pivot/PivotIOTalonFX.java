@@ -18,7 +18,6 @@ public class PivotIOTalonFX extends GenericSuperstructureIOTalonFX implements Pi
             .withCANCoderID(PIVOT_CONFIG.canCoderID())
             .withCANCoderOffset(PIVOT_CONFIG.canCoderOffset())
             .withCANCoderDirection(CANCODER_DIRECTION));
-    // .withUpperExtensionLimit(UPPER_EXTENSION_LIMIT));
 
     setSlot0(
         GAINS.kP(),

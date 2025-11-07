@@ -57,14 +57,16 @@ public abstract class GenericSuperstructureIOTalonFX implements GenericSuperstru
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     config.Voltage.withPeakForwardVoltage(superstructureConfig.upperVoltLimit);
-    config.Voltage.withPeakReverseVoltage(superstructureConfig.lowerExtensionLimit);
+    config.Voltage.withPeakReverseVoltage(superstructureConfig.lowerVoltLimit);
     config.Feedback.withSensorToMechanismRatio(superstructureConfig.reduction);
 
-    config.SoftwareLimitSwitch.withReverseSoftLimitEnable(true);
+    config.SoftwareLimitSwitch.withReverseSoftLimitEnable(
+        superstructureConfig.lowerExtensionLimitEnabled);
     config.SoftwareLimitSwitch.withReverseSoftLimitThreshold(
         superstructureConfig.lowerExtensionLimit);
-    config.SoftwareLimitSwitch.withReverseSoftLimitEnable(true);
-    config.SoftwareLimitSwitch.withReverseSoftLimitThreshold(
+    config.SoftwareLimitSwitch.withForwardSoftLimitEnable(
+        superstructureConfig.upperExtensionLimitEnabled);
+    config.SoftwareLimitSwitch.withForwardSoftLimitThreshold(
         superstructureConfig.upperExtensionLimit);
 
     talon = new TalonFX(superstructureConfig.id);
