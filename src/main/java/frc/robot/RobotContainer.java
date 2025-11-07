@@ -233,6 +233,7 @@ public class RobotContainer {
     new EventTrigger("Score_L4")
         .onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
     new EventTrigger("Eject_L4").onTrue(rollers.setTargetCommand(RollerState.EJECT_L4));
+    new EventTrigger("Zero").onTrue(swerve.zeroGyroCommand());
   }
 
   private void configureBindings() {
