@@ -237,7 +237,6 @@ public class RobotContainer {
                 })
             .withName("Drive Teleop"));
 
-    driverA.a().onTrue(new InstantCommand(() -> swerve.smartZeroGyro()));
     configureCoralBindings();
     configureOverrideBindings();
     configureClimbBindings();
@@ -337,7 +336,7 @@ public class RobotContainer {
 
     // zeroing
     driverB
-        .b()
+        .a()
         .whileTrue(
             new InstantCommand(
                 () -> superstructureController.setTargetState(SuperstructureState.ZERO)));
