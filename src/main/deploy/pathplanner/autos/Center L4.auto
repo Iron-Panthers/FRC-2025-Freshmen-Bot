@@ -47,6 +47,12 @@
           "data": {
             "name": "Eject_L4"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Zero"
+          }
         }
       ]
     }
