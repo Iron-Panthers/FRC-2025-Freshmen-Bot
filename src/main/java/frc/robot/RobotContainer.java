@@ -369,10 +369,6 @@ public class RobotContainer {
                   rollers.setTargetState(RollerState.IDLE);
                 }));
 
-    driverB
-        .rightStick()
-        .whileTrue(new InstantCommand(() -> RobotState.getInstance().switchRotationLock()));
-
     // zeroing
     driverB
         .a()
@@ -424,7 +420,7 @@ public class RobotContainer {
   }
 
   public Command getAutoCommand() {
-    return AutoBuilder.buildAuto("Going Straight L4"); // HACK: Replace once we get auto logging
+    return autoChooser.get(); // HACK: Replace once we get auto logging
   }
 
   // runs when auto starts
@@ -482,7 +478,7 @@ public class RobotContainer {
    */
   public static Rotation2d calculateSnapTargetHeading(Rotation2d targetHeading) {
 
-    targetHeading = targetHeading.rotateBy(Rotation2d.kPi); // because back of robot
+    targetHeading = targetHeading.rotateBy(new Rotation2d(Math.PI + Math.toRadians(30))); // because back of robot
 
     // TODO: Maybe make this *** mathematica ***
     double closest = DriveConstants.REEF_SNAP_ANGLES[0];

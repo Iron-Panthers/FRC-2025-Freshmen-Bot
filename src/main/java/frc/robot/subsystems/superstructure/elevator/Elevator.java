@@ -21,7 +21,7 @@ public class Elevator extends GenericSuperstructure<Elevator.ElevatorTarget>
     L4(32),
     TOP(31),
     INTAKE(4),
-    CLIMB(13);
+    CLIMB(7);
 
     private double position = 0;
 

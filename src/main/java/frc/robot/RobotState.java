@@ -76,7 +76,7 @@ public class RobotState {
 
   private ApproachPose[] approachPoses =
       generateApproachPoses(lastApproachOffset, lastApproachBSide);
-      
+
   private static RobotState instance;
 
   public static RobotState getInstance() {
