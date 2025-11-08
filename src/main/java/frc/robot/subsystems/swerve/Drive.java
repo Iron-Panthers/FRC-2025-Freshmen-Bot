@@ -97,9 +97,7 @@ public class Drive extends SubsystemBase {
           // 0.0001 to make the wheels stop in a diamond shape instead of straight so they
           // do not
           // vibrate
-          if (RobotState.getInstance().isRotationLocked()) {
-            targetSpeeds.omegaRadiansPerSecond = headingController.update() + 0.0001;
-          }
+          targetSpeeds.omegaRadiansPerSecond = headingController.update() + 0.0001;
         }
       }
       case TRAJECTORY -> {

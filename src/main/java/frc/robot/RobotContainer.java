@@ -3,7 +3,9 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,10 +15,14 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.VibrateHIDCommand;
 import frc.robot.subsystems.canWatchdog.CANWatchdog;
@@ -206,11 +212,45 @@ public class RobotContainer {
 
   /** Use this method to define the named commands for all of the autos */
   private void nameCommands() {
-    // Register Command Names in this method
+    // Register Command Names
+    NamedCommands.registerCommand(
+        "Score_L4",
+        new SequentialCommandGroup(
+                new WaitUntilCommand(() -> rollers.intakeSensorsTriggered()),
+                new FunctionalCommand(
+                    () -> superstructureController.setTargetState(SuperstructureState.L4),
+                    () -> {},
+                    (e) -> {},
+                    () ->
+                        superstructureController.getCurrentState() == SuperstructureState.L4
+                            && superstructureController.superstructureReachedTarget(),
+                    superstructureController))
+            .withTimeout(2.6));
+    NamedCommands.registerCommand("Eject", rollers.setTargetCommand(RollerState.EJECT_TOP));
+    NamedCommands.registerCommand(
+        "Eject_L4",
+        new SequentialCommandGroup(
+            rollers.setTargetCommand(RollerState.EJECT_L4),
+            new WaitCommand(0.2),
+            superstructureController
+                .goToStateCommand(SuperstructureState.INTAKE)
+                .alongWith(
+                    new WaitCommand(0.4).andThen(rollers.setTargetCommand(RollerState.INTAKE)))));
+    new EventTrigger("Score_L4")
+        .onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
+    new EventTrigger("Eject_L4").onTrue(rollers.setTargetCommand(RollerState.EJECT_L4));
   }
 
   private void configureBindings() {
     // -----Driver Controls-----
+
+    configureCoralBindings();
+    configureOverrideBindings();
+    configureClimbBindings();
+    configureDriveBindings();
+  }
+
+  private void configureDriveBindings() {
     swerve.setDefaultCommand(
         swerve
             .run(
@@ -227,9 +267,34 @@ public class RobotContainer {
                 })
             .withName("Drive Teleop"));
 
-    configureCoralBindings();
-    configureOverrideBindings();
-    configureClimbBindings();
+    // zeroing
+    driverA.start().onTrue(swerve.zeroGyroCommand());
+
+    // Station angle snap
+    driverA
+        .x()
+        .onTrue(
+            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)))));
+
+    driverA
+        .b()
+        .onTrue(
+            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)))));
+
+    new Trigger(
+            () -> (Math.abs(driverA.getRightY()) > 0.2) || (Math.abs(driverA.getRightX()) > 0.2))
+        .whileTrue(
+            new FunctionalCommand(
+                () -> {},
+                () ->
+                    swerve.setTargetHeading(
+                        calculateSnapTargetHeading(
+                            new Rotation2d(
+                                Math.atan2(
+                                    MathUtil.applyDeadband(-driverA.getRightX(), 0.1),
+                                    MathUtil.applyDeadband(-driverA.getRightY(), 0.1))))),
+                interrupted -> {},
+                () -> false));
   }
 
   private void configureCoralBindings() {
@@ -293,21 +358,6 @@ public class RobotContainer {
   }
 
   private void configureOverrideBindings() {
-
-    // zeroing
-    driverA.start().onTrue(swerve.zeroGyroCommand());
-
-    // Station angle snap
-    driverA
-        .x()
-        .onTrue(
-            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(128)))));
-
-    driverA
-        .b()
-        .onTrue(
-            new InstantCommand(() -> swerve.setTargetHeading(new Rotation2d(Math.toRadians(232)))));
-
     // Stopping all commands
     driverB
         .x()
@@ -318,10 +368,6 @@ public class RobotContainer {
                   climbController.setStopped(true);
                   rollers.setTargetState(RollerState.IDLE);
                 }));
-
-    driverB
-        .rightStick()
-        .whileTrue(new InstantCommand(() -> RobotState.getInstance().switchRotationLock()));
 
     // zeroing
     driverB
@@ -374,7 +420,7 @@ public class RobotContainer {
   }
 
   public Command getAutoCommand() {
-    return AutoBuilder.buildAuto("R L4 (3) (EDC)"); // HACK: Replace once we get auto logging
+    return autoChooser.get(); // HACK: Replace once we get auto logging
   }
 
   // runs when auto starts
@@ -432,7 +478,7 @@ public class RobotContainer {
    */
   public static Rotation2d calculateSnapTargetHeading(Rotation2d targetHeading) {
 
-    targetHeading = targetHeading.rotateBy(Rotation2d.kPi); // because back of robot
+    targetHeading = targetHeading.rotateBy(new Rotation2d(Math.PI + Math.toRadians(30))); // because back of robot
 
     // TODO: Maybe make this *** mathematica ***
     double closest = DriveConstants.REEF_SNAP_ANGLES[0];
