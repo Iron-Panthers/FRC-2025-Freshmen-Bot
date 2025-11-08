@@ -3,7 +3,9 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,7 +18,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
@@ -208,7 +212,33 @@ public class RobotContainer {
 
   /** Use this method to define the named commands for all of the autos */
   private void nameCommands() {
-    // Register Command Names in this method
+    // Register Command Names
+    NamedCommands.registerCommand(
+        "Score_L4",
+        new SequentialCommandGroup(
+                new WaitUntilCommand(() -> rollers.intakeSensorsTriggered()),
+                new FunctionalCommand(
+                    () -> superstructureController.setTargetState(SuperstructureState.L4),
+                    () -> {},
+                    (e) -> {},
+                    () ->
+                        superstructureController.getCurrentState() == SuperstructureState.L4
+                            && superstructureController.superstructureReachedTarget(),
+                    superstructureController))
+            .withTimeout(2.6));
+    NamedCommands.registerCommand("Eject", rollers.setTargetCommand(RollerState.EJECT_TOP));
+    NamedCommands.registerCommand(
+        "Eject_L4",
+        new SequentialCommandGroup(
+            rollers.setTargetCommand(RollerState.EJECT_L4),
+            new WaitCommand(0.2),
+            superstructureController
+                .goToStateCommand(SuperstructureState.INTAKE)
+                .alongWith(
+                    new WaitCommand(0.4).andThen(rollers.setTargetCommand(RollerState.INTAKE)))));
+    new EventTrigger("Score_L4")
+        .onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
+    new EventTrigger("Eject_L4").onTrue(rollers.setTargetCommand(RollerState.EJECT_L4));
   }
 
   private void configureBindings() {
@@ -394,7 +424,7 @@ public class RobotContainer {
   }
 
   public Command getAutoCommand() {
-    return AutoBuilder.buildAuto("R L4 (3) (EDC)"); // HACK: Replace once we get auto logging
+    return AutoBuilder.buildAuto("Going Straight L4"); // HACK: Replace once we get auto logging
   }
 
   // runs when auto starts
