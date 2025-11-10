@@ -13,8 +13,7 @@ import frc.robot.subsystems.canWatchdog.CANWatchdogConstants.CAN;
 public class PivotConstants {
   public static final PivotConfig PIVOT_CONFIG =
       switch (Constants.getRobotType()) {
-        case COMP -> new PivotConfig(
-            CAN.at(17, "Pivot"), CAN.at(18, "Pivot Encoder"), 0.1865234375, 1);
+        case COMP -> new PivotConfig(CAN.at(17, "Pivot"), CAN.at(18, "Pivot Encoder"), 0.025875, 1);
         case SIM -> new PivotConfig(CAN.at(8, "Pivot"), CAN.at(28, "Pivot Encoder"), 0, 25.0 / 3);
         default -> new PivotConfig(0, 0, 0, 1);
       };

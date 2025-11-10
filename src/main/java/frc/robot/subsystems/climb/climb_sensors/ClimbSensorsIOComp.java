@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 
 public class ClimbSensorsIOComp implements ClimbSensorsIO {
   // FIXME; pretty sure rio DIO pullup
-  private final DigitalInput intakeSensor = new DigitalInput(7);
+  private final DigitalInput intakeSensor = new DigitalInput(0);
 
   @Override
   public void updateInputs(ClimbSensorsIOInputs inputs) {

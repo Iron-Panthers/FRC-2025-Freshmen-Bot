@@ -21,7 +21,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "Score_L4"
+                        "name": "Top"
                       }
                     },
                     {
@@ -40,6 +40,18 @@
           "type": "path",
           "data": {
             "pathName": "HScore"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_L4"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
           }
         },
         {

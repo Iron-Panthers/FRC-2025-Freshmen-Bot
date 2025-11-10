@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
@@ -216,7 +215,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Score_L4",
         new SequentialCommandGroup(
-                new WaitUntilCommand(() -> rollers.intakeSensorsTriggered()),
+                // WaitUntilCommand(() -> rollers.intakeSensorsTriggered()) :
                 new FunctionalCommand(
                     () -> superstructureController.setTargetState(SuperstructureState.L4),
                     () -> {},
@@ -227,19 +226,15 @@ public class RobotContainer {
                     superstructureController))
             .withTimeout(2.6));
     NamedCommands.registerCommand("Eject", rollers.setTargetCommand(RollerState.EJECT_TOP));
+    NamedCommands.registerCommand("Eject_L4", rollers.setTargetCommand(RollerState.EJECT_L4));
     NamedCommands.registerCommand(
-        "Eject_L4",
-        new SequentialCommandGroup(
-            rollers.setTargetCommand(RollerState.EJECT_L4),
-            new WaitCommand(0.2),
-            superstructureController
-                .goToStateCommand(SuperstructureState.INTAKE)
-                .alongWith(
-                    new WaitCommand(0.4).andThen(rollers.setTargetCommand(RollerState.INTAKE)))));
+        "Top", superstructureController.goToStateCommand(SuperstructureState.TOP));
     new EventTrigger("Score_L4")
         .onTrue(superstructureController.goToStateCommand(SuperstructureState.L4));
     new EventTrigger("Eject_L4").onTrue(rollers.setTargetCommand(RollerState.EJECT_L4));
     new EventTrigger("Zero").onTrue(swerve.zeroGyroCommand());
+    new EventTrigger("Top")
+        .onTrue(superstructureController.goToStateCommand(SuperstructureState.TOP));
   }
 
   private void configureBindings() {
@@ -422,6 +417,7 @@ public class RobotContainer {
 
   public Command getAutoCommand() {
     return autoChooser.get(); // HACK: Replace once we get auto logging
+    // return AutoBuilder.buildAuto("Center L4");
   }
 
   // runs when auto starts
@@ -479,7 +475,7 @@ public class RobotContainer {
    */
   public static Rotation2d calculateSnapTargetHeading(Rotation2d targetHeading) {
 
-    targetHeading = targetHeading.rotateBy(new Rotation2d(Math.PI + Math.toRadians(30))); // because back of robot
+    targetHeading = targetHeading.rotateBy(new Rotation2d(Math.PI)); // because back of robot
 
     // TODO: Maybe make this *** mathematica ***
     double closest = DriveConstants.REEF_SNAP_ANGLES[0];
